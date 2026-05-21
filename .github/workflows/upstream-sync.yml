@@ -1,0 +1,58 @@
+name: Upstream Sync
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history so we can merge
+
+      - name: Configure Git Identity
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+
+      - name: Add Upstream Remote
+        run: |
+          git remote add upstream https://github.com/rustemar/voice-keyboard.git
+          git fetch upstream main
+
+      - name: Merge Upstream
+        run: |
+          # Try to merge upstream/main.
+          # If there is a merge conflict, we will resolve it by keeping our customized method.xml.
+          git merge upstream/main -m "chore: sync with upstream" || {
+            echo "Merge conflict detected. Resolving method.xml conflict automatically..."
+            if git status --porcelain | grep -E '^U.*method.xml'; then
+              git checkout --ours app/src/main/res/xml/method.xml
+              git add app/src/main/res/xml/method.xml
+            fi
+            git add .
+            git commit -m "chore: sync with upstream and resolve conflicts"
+          }
+
+      - name: Apply Voice Keyboard Attributes
+        run: |
+          chmod +x scripts/apply_ime_attributes.py
+          python3 scripts/apply_ime_attributes.py
+
+      - name: Commit and Push if changed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "chore: automatically re-apply voice keyboard attributes"
+            git push origin main
+          else
+            echo "No new changes to push."
+            git push origin main
+          fi

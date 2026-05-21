@@ -29,15 +29,25 @@ jobs:
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
 
-      - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release-keystore.jks
+      - name: Setup Keystore
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "Using user-provided keystore secrets..."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release-keystore.jks
+            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+          else
+            echo "No keystore secrets found. Generating a self-signed keystore..."
+            keytool -genkey -v -keystore release-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias -storepass my-password -keypass my-password -dname "CN=VoiceKeyboard, OU=None, O=None, L=None, S=None, C=US"
+            echo "KEYSTORE_PASSWORD=my-password" >> $GITHUB_ENV
+            echo "KEY_ALIAS=my-alias" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=my-password" >> $GITHUB_ENV
+          fi
 
       - name: Build release APK
         env:
           KEYSTORE_PATH: ${{ github.workspace }}/release-keystore.jks
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assembleRelease
 
       - name: Get version info
@@ -54,35 +64,35 @@ jobs:
           name: VoiceKeyboard-${{ steps.version.outputs.name }}-${{ steps.version.outputs.sha }}
           path: app/build/outputs/apk/release/*.apk
 
-      - name: Read release notes
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: notes
+      - name: Determine Release Tag
+        id: tag
         run: |
-          if [ -f RELEASE_NOTES.md ]; then
-            FIRST_LINE=$(head -1 RELEASE_NOTES.md)
-            # If first line starts with "v" + digit (e.g. "v1.7.3 — Title"), treat it as the
-            # release title and use the remainder (skipping the blank line after) as the body.
-            # Otherwise fall back to using the entire file as body and let the tag name be the title.
-            if [[ "$FIRST_LINE" =~ ^v[0-9] ]]; then
-              TITLE="$FIRST_LINE"
-              BODY=$(tail -n +3 RELEASE_NOTES.md)
-            else
-              TITLE=""
-              BODY=$(cat RELEASE_NOTES.md)
-            fi
-            {
-              echo "title=${TITLE}"
-              echo 'body<<RELEASE_EOF'
-              echo "${BODY}"
-              echo 'RELEASE_EOF'
-            } >> $GITHUB_OUTPUT
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+            IS_PRERELEASE="false"
+            RELEASE_TITLE="Voice Keyboard ${TAG_NAME}"
+          else
+            TAG_NAME="latest"
+            IS_PRERELEASE="true"
+            RELEASE_TITLE="Voice Keyboard Latest Build"
           fi
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+          echo "title=${RELEASE_TITLE}" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/release/*.apk
-          name: ${{ steps.notes.outputs.title }}
-          body: ${{ steps.notes.outputs.body }}
-          generate_release_notes: ${{ steps.notes.outputs.body == '' }}
+          tag_name: ${{ steps.tag.outputs.tag_name }}
+          name: ${{ steps.tag.outputs.title }}
+          prerelease: ${{ steps.tag.outputs.prerelease }}
+          body: |
+            Automated build of the Voice Keyboard.
+            
+            - **App Version**: ${{ steps.version.outputs.name }}
+            - **Commit**: ${{ github.sha }}
+            - **Branch**: ${{ github.ref_name }}
+            - **Date (UTC)**: ${{ github.event.head_commit.timestamp || 'Just now' }}
+          generate_release_notes: false
