@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   sync:
@@ -24,8 +25,12 @@ jobs:
 
       - name: Add Upstream Remote
         run: |
-          git remote add upstream https://github.com/cwhde/voice-keyboard.git
+          git remote add upstream https://github.com/rustemar/voice-keyboard.git
           git fetch upstream main
+
+      - name: Record SHA
+        id: pre
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Merge Upstream
         run: |
@@ -46,13 +51,26 @@ jobs:
           chmod +x scripts/apply_ime_attributes.py
           python3 scripts/apply_ime_attributes.py
 
-      - name: Commit and Push if changed
+      - name: Push and Detect Changes
+        id: post
         run: |
+          BEFORE_SHA="${{ steps.pre.outputs.sha }}"
           if [ -n "$(git status --porcelain)" ]; then
             git add .
             git commit -m "chore: automatically re-apply voice keyboard attributes"
+          fi
+          AFTER_SHA=$(git rev-parse HEAD)
+          if [ "$BEFORE_SHA" != "$AFTER_SHA" ]; then
             git push origin main
+            echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "No new changes to push."
-            git push origin main
+            git push origin main || echo "Already up to date."
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Trigger Build
+        if: steps.post.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run build.yml --ref main

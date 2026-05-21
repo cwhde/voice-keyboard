@@ -37,13 +37,12 @@ else:
     print(f"Error: {method_xml_path} not found.")
 
 
-# 2. Redirect all upstream repository references to the fork repository
 upstream_ref = "rustemar/voice-keyboard"
 fork_ref = "cwhde/voice-keyboard"
 
 print(f"Redirecting all upstream references ({upstream_ref}) to fork ({fork_ref})...")
 
-exclude_dirs = {'.git', '.gradle', 'build', 'gradle'}
+exclude_dirs = {'.git', '.gradle', 'build', 'gradle', '.github'}
 
 for root, dirs, files in os.walk('.'):
     # Exclude unwanted directories
@@ -73,10 +72,29 @@ if os.path.exists(readme_path):
     with open(readme_path, "r", encoding="utf-8") as f:
         readme_content = f.read()
 
-    badge_markdown = '[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/badges/get-on-obtainium.svg)](https://obtainium.imranr.dev/app?url=https://github.com/cwhde/voice-keyboard)'
+    badge_markdown = '[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/badges/get-on-obtainium.svg)](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/cwhde/voice-keyboard)'
     
-    # Check if badge is present (or if there is an Obtainium redirect link)
-    if "https://obtainium.imranr.dev/app?url=" not in readme_content:
+    # Check if there is an existing Obtainium badge or link and update/replace it
+    if "obtainium.imranr.dev" in readme_content:
+        # Replace the old badge pattern or redirect link with the new one
+        # Try to replace the exact markdown link structure
+        updated_content = re.sub(
+            r'\[!\[Get it on Obtainium\].*?\]\(.*?\)',
+            badge_markdown,
+            readme_content
+        )
+        # Also clean up any loose old links if they got left behind
+        updated_content = updated_content.replace(
+            "https://obtainium.imranr.dev/app?url=https://github.com/cwhde/voice-keyboard",
+            "https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/cwhde/voice-keyboard"
+        )
+        if updated_content != readme_content:
+            with open(readme_path, "w", encoding="utf-8") as f:
+                f.write(updated_content)
+            print("Successfully updated the existing Obtainium badge in README.md to the robust redirect link.")
+        else:
+            print("Obtainium badge is already up to date in README.md.")
+    else:
         # Find '# Voice Keyboard' to insert the badge under the main title
         pattern = re.compile(r'(# Voice Keyboard\n)')
         match = pattern.search(readme_content)
@@ -94,5 +112,3 @@ if os.path.exists(readme_path):
             print("Successfully prepended the Obtainium badge in README.md.")
         else:
             print("Warning: Could not find main title in README.md to insert Obtainium badge.")
-    else:
-        print("Obtainium badge is already present in README.md.")
