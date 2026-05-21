@@ -31,7 +31,7 @@ class ReleaseChecker(private val http: OkHttpClient) {
 
     companion object {
         private const val RELEASES_URL =
-            "https://api.github.com/repos/rustemar/voice-keyboard/releases"
+            "https://api.github.com/repos/cwhde/voice-keyboard/releases"
     }
 
     private val installer = ApkInstaller(http)

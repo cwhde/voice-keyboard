@@ -1,5 +1,7 @@
 # Voice Keyboard
 
+[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/badges/get-on-obtainium.svg)](https://obtainium.imranr.dev/app?url=https://github.com/cwhde/voice-keyboard)
+
 Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible Whisper endpoint of your choice — by default Groq (free tier available), can be pointed at OpenAI or any other compatible provider. Optional LLM post-processing.
 
 <p align="center">
@@ -46,7 +48,7 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 
 ## Setup
 
-1. Install the APK from [Releases](https://github.com/rustemar/voice-keyboard/releases)
+1. Install the APK from [Releases](https://github.com/cwhde/voice-keyboard/releases)
 2. Go to Settings → System → Languages & input → On-screen keyboard
 3. Enable "Voice Keyboard"
 4. Open the app and enter a Whisper API key. The default endpoint is Groq — get a free key at [console.groq.com/keys](https://console.groq.com/keys). You can also point the app at OpenAI's Whisper endpoint or any other OpenAI-compatible provider in the same screen.
@@ -57,7 +59,7 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 [Obtainium](https://github.com/ImranR98/Obtainium) is a third-party Android app that auto-updates apps directly from GitHub Releases. Recommended over the in-app updater if you want to avoid the system "install unknown apps" prompt and Play Protect warnings on each manual install.
 
 1. Install Obtainium from its [releases page](https://github.com/ImranR98/Obtainium/releases) or via [F-Droid](https://apt.izzysoft.de/fdroid/index/apk/dev.imranr.obtainium.fdroid).
-2. In Obtainium, tap **Add App** and paste `https://github.com/rustemar/voice-keyboard`.
+2. In Obtainium, tap **Add App** and paste `https://github.com/cwhde/voice-keyboard`.
 3. Obtainium will install Voice Keyboard and notify you when new releases are published.
 
 ## Privacy
@@ -73,7 +75,7 @@ Before first use of the microphone, the app shows a one-time disclosure explaini
 ## Building from source
 
 ```bash
-git clone https://github.com/rustemar/voice-keyboard.git
+git clone https://github.com/cwhde/voice-keyboard.git
 cd voice-keyboard
 ./gradlew assembleDebug
 ```

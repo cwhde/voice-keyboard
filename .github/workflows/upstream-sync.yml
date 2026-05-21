@@ -24,7 +24,7 @@ jobs:
 
       - name: Add Upstream Remote
         run: |
-          git remote add upstream https://github.com/rustemar/voice-keyboard.git
+          git remote add upstream https://github.com/cwhde/voice-keyboard.git
           git fetch upstream main
 
       - name: Merge Upstream

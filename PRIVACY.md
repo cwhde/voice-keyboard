@@ -10,7 +10,7 @@ _Last updated: 2026‑04‑25_
 - Audio you record is sent **only** to the speech‑to‑text provider you configure (Groq Whisper or OpenAI Whisper), using **your own API key**.
 - Optional post‑processing sends the transcribed text to OpenAI or Anthropic, again using **your own API key**.
 - All settings, API keys, diagnostic logs, and crash reports stay on your device. They are explicitly excluded from Google Drive backup and device‑transfer.
-- The app is open source: <https://github.com/rustemar/voice-keyboard>.
+- The app is open source: <https://github.com/cwhde/voice-keyboard>.
 
 ## Data the app handles
 
@@ -85,7 +85,7 @@ You can verify all of the above by reading the source.
 
 ## Updates
 
-The app polls `https://api.github.com/repos/rustemar/voice-keyboard/releases` when you open the setup screen, to check for newer versions. If a newer release exists, you are shown the changelog and offered the choice to download the APK. No request is made to GitHub if you don't open the setup screen.
+The app polls `https://api.github.com/repos/cwhde/voice-keyboard/releases` when you open the setup screen, to check for newer versions. If a newer release exists, you are shown the changelog and offered the choice to download the APK. No request is made to GitHub if you don't open the setup screen.
 
 GitHub's privacy policy applies to those requests: <https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement>.
 
@@ -99,4 +99,4 @@ If this policy changes in a way that affects what data leaves your device, the c
 
 ## Contact
 
-Questions, concerns, or false‑positive reports: open an issue at <https://github.com/rustemar/voice-keyboard/issues> or email <hukutu4.eth@gmail.com>.
+Questions, concerns, or false‑positive reports: open an issue at <https://github.com/cwhde/voice-keyboard/issues> or email <hukutu4.eth@gmail.com>.

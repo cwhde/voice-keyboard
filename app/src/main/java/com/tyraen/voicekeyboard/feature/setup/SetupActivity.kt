@@ -121,7 +121,7 @@ class SetupActivity : AppCompatActivity() {
         } catch (_: Exception) {}
 
         setupLink(txtGetApiKey, "https://console.groq.com/keys")
-        setupLink(txtGithub, "https://github.com/rustemar/voice-keyboard")
+        setupLink(txtGithub, "https://github.com/cwhde/voice-keyboard")
     }
 
     private fun setupActions() {
@@ -404,7 +404,7 @@ class SetupActivity : AppCompatActivity() {
                 startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://github.com/rustemar/voice-keyboard/blob/main/PRIVACY.md")
+                        Uri.parse("https://github.com/cwhde/voice-keyboard/blob/main/PRIVACY.md")
                     )
                 )
                 showMicDisclosure()
