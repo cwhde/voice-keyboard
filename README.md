@@ -16,7 +16,7 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 - Real-time voice recording with amplitude visualization
 - **Processing queue** — start a new recording immediately, previous ones transcribe in the background
 - **Offline-proof recovery** — recordings that can't be transcribed are saved on the device and resent automatically as soon as a validated internet connection returns; they survive closing the keyboard, app rebuilds, and reboots, and are kept until successfully sent (a "resend" button is also available to force a retry)
-- Works with any OpenAI-compatible Whisper API; ships with Groq as the default endpoint (whisper-large-v3-turbo)
+- Works with any OpenAI-compatible Whisper API; ships with Groq as the default endpoint (whisper-large-v3-turbo). Free keys are available from both Groq and Mistral
 - Configurable API endpoint, model, and language
 - Auto-start recording when keyboard opens
 - **Custom vocabulary** — add names and technical terms to bias recognition; helps with contacts and rare words
@@ -50,7 +50,10 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 1. Install the APK from [Releases](https://github.com/rustemar/voice-keyboard/releases)
 2. Go to Settings → System → Languages & input → On-screen keyboard
 3. Enable "Voice Keyboard"
-4. Open the app and enter a Whisper API key. The default endpoint is Groq — get a free key at [console.groq.com/keys](https://console.groq.com/keys). You can also point the app at OpenAI's Whisper endpoint or any other OpenAI-compatible provider in the same screen.
+4. Open the app and enter a speech-to-text API key. Any OpenAI-compatible Whisper endpoint works:
+   - **Groq** (default, free) — get a key at [console.groq.com/keys](https://console.groq.com/keys); nothing else to change.
+   - **Mistral** (free) — get a key at [console.mistral.ai](https://console.mistral.ai/api-keys), then set the endpoint to `https://api.mistral.ai/v1/audio/transcriptions` and the model to `voxtral-mini-latest`.
+   - **OpenAI** or any other compatible provider — set the endpoint and model in the same screen.
 5. (Optional) Configure post-processing with your OpenAI or Claude API key
 
 ### Installing via Obtainium (recommended)

@@ -5,7 +5,7 @@
     <string name="status_transcribing">Dönüştürülüyor\u2026</string>
     <string name="status_error">Hata: %s</string>
     <string name="settings_title">Voice Keyboard Ayarları</string>
-    <string name="settings_api_key">GroQ API Anahtarı</string>
+    <string name="settings_api_key">Konuşmayı metne çevirme API anahtarı</string>
     <string name="settings_model">Model</string>
     <string name="settings_language">Dil kodu</string>
     <string name="settings_endpoint">API Adresi</string>
@@ -43,7 +43,9 @@
     <string name="update_check">Güncellemeleri kontrol et</string>
     <string name="update_no_updates">En son sürüme sahipsiniz</string>
     <string name="update_check_failed">Güncellemeler kontrol edilemedi. İnternet bağlantınızı kontrol edin.</string>
-    <string name="settings_get_api_key">API anahtarınızı alın → console.groq.com</string>
+    <string name="settings_get_api_key">Ücretsiz Groq anahtarı → console.groq.com</string>
+    <string name="settings_get_api_key_alt">Ücretsiz Mistral anahtarı → console.mistral.ai</string>
+    <string name="settings_provider_hint">OpenAI uyumlu her Whisper anahtarı çalışır. Groq varsayılan ayarlarla çalışır; Mistral için uç noktayı api.mistral.ai/v1/audio/transcriptions, modeli de voxtral-mini-latest olarak ayarlayın.</string>
     <string name="about_project">GitHub — Proje hakkında</string>
     <string name="link_copied">Bağlantı kopyalandı</string>
     <string name="status_postprocessing">İşleniyor\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">Karakter sınırına ulaşıldı. Önce bazı kelimeleri kaldırın.</string>
     <string name="settings_single_word_strip_punct">Tek kelimede nokta koyma</string>
     <string name="settings_single_word_strip_punct_hint">Kişilerde sesli arama ve diğer kısa sorgular için kullanışlıdır.</string>
+    <string name="pp_rhyme">Kafiye</string>
+    <string name="cd_backspace">Sil</string>
+    <string name="cd_cancel">İptal</string>
+    <string name="cd_cut_all">Tüm metni kes</string>
+    <string name="cd_enter">Enter</string>
+    <string name="cd_hide_keyboard">Klavyeyi gizle</string>
+    <string name="cd_pending_count">Bekleyen kayıtlar</string>
+    <string name="cd_record">Kaydet</string>
+    <string name="cd_retry_failed">Yazıya dökülemeyen kayıtları yeniden gönder</string>
+    <string name="cd_send">Gönder</string>
+    <string name="cd_settings">Ayarlar</string>
 </resources>

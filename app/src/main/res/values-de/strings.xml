@@ -5,7 +5,7 @@
     <string name="status_transcribing">Transkription\u2026</string>
     <string name="status_error">Fehler: %s</string>
     <string name="settings_title">Voice Keyboard Einstellungen</string>
-    <string name="settings_api_key">GroQ API-Schlüssel</string>
+    <string name="settings_api_key">API-Schlüssel für Spracherkennung</string>
     <string name="settings_model">Modell</string>
     <string name="settings_language">Sprachcode</string>
     <string name="settings_endpoint">API-Endpunkt</string>
@@ -43,7 +43,9 @@
     <string name="update_check">Nach Updates suchen</string>
     <string name="update_no_updates">Sie haben die neueste Version</string>
     <string name="update_check_failed">Updates konnten nicht geprüft werden. Überprüfen Sie Ihre Internetverbindung.</string>
-    <string name="settings_get_api_key">API-Schlüssel erhalten → console.groq.com</string>
+    <string name="settings_get_api_key">Kostenloser Groq-Schlüssel → console.groq.com</string>
+    <string name="settings_get_api_key_alt">Kostenloser Mistral-Schlüssel → console.mistral.ai</string>
+    <string name="settings_provider_hint">Jeder OpenAI-kompatible Whisper-Schlüssel funktioniert. Groq funktioniert mit den Standardeinstellungen; für Mistral den Endpunkt auf api.mistral.ai/v1/audio/transcriptions und das Modell auf voxtral-mini-latest setzen.</string>
     <string name="about_project">GitHub — Über das Projekt</string>
     <string name="link_copied">Link kopiert</string>
     <string name="status_postprocessing">Nachbearbeitung\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">Zeichenlimit erreicht. Entfernen Sie zuerst einige Wörter.</string>
     <string name="settings_single_word_strip_punct">Punkt bei Einzelwort weglassen</string>
     <string name="settings_single_word_strip_punct_hint">Praktisch für Sprachsuche in Kontakten und andere kurze Abfragen.</string>
+    <string name="pp_rhyme">Reim</string>
+    <string name="cd_backspace">Löschen</string>
+    <string name="cd_cancel">Abbrechen</string>
+    <string name="cd_cut_all">Gesamten Text ausschneiden</string>
+    <string name="cd_enter">Eingabe</string>
+    <string name="cd_hide_keyboard">Tastatur ausblenden</string>
+    <string name="cd_pending_count">Ausstehende Aufnahmen</string>
+    <string name="cd_record">Aufnehmen</string>
+    <string name="cd_retry_failed">Fehlgeschlagene Aufnahmen erneut senden</string>
+    <string name="cd_send">Senden</string>
+    <string name="cd_settings">Einstellungen</string>
 </resources>

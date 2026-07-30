@@ -5,7 +5,7 @@
     <string name="status_transcribing">识别中\u2026</string>
     <string name="status_error">错误：%s</string>
     <string name="settings_title">Voice Keyboard 设置</string>
-    <string name="settings_api_key">GroQ API 密钥</string>
+    <string name="settings_api_key">语音转文字 API 密钥</string>
     <string name="settings_model">模型</string>
     <string name="settings_language">语言代码</string>
     <string name="settings_endpoint">API 地址</string>
@@ -43,7 +43,9 @@
     <string name="update_check">检查更新</string>
     <string name="update_no_updates">已是最新版本</string>
     <string name="update_check_failed">无法检查更新，请检查网络连接。</string>
-    <string name="settings_get_api_key">获取您的 API 密钥 → console.groq.com</string>
+    <string name="settings_get_api_key">免费 Groq 密钥 → console.groq.com</string>
+    <string name="settings_get_api_key_alt">免费 Mistral 密钥 → console.mistral.ai</string>
+    <string name="settings_provider_hint">任何兼容 OpenAI 的 Whisper 密钥均可使用。Groq 开箱即用；使用 Mistral 时，请将接口地址设为 api.mistral.ai/v1/audio/transcriptions，模型设为 voxtral-mini-latest。</string>
     <string name="about_project">GitHub — 关于项目</string>
     <string name="link_copied">链接已复制</string>
     <string name="status_postprocessing">后处理中\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">已达到字符上限。请先移除一些词。</string>
     <string name="settings_single_word_strip_punct">单词输出不加句号</string>
     <string name="settings_single_word_strip_punct_hint">适用于联系人语音搜索和其他简短查询。</string>
+    <string name="pp_rhyme">押韵</string>
+    <string name="cd_backspace">删除</string>
+    <string name="cd_cancel">取消</string>
+    <string name="cd_cut_all">剪切全部文本</string>
+    <string name="cd_enter">回车</string>
+    <string name="cd_hide_keyboard">隐藏键盘</string>
+    <string name="cd_pending_count">待处理的录音</string>
+    <string name="cd_record">录音</string>
+    <string name="cd_retry_failed">重新发送转写失败的录音</string>
+    <string name="cd_send">发送</string>
+    <string name="cd_settings">设置</string>
 </resources>

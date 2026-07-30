@@ -5,7 +5,7 @@
     <string name="status_transcribing">جارٍ التحويل\u2026</string>
     <string name="status_error">خطأ: %s</string>
     <string name="settings_title">إعدادات Voice Keyboard</string>
-    <string name="settings_api_key">مفتاح API لـ GroQ</string>
+    <string name="settings_api_key">مفتاح API لتحويل الكلام إلى نص</string>
     <string name="settings_model">النموذج</string>
     <string name="settings_language">رمز اللغة</string>
     <string name="settings_endpoint">عنوان API</string>
@@ -43,7 +43,9 @@
     <string name="update_check">التحقق من التحديثات</string>
     <string name="update_no_updates">لديك أحدث إصدار</string>
     <string name="update_check_failed">تعذّر التحقق من التحديثات. تحقق من اتصالك بالإنترنت.</string>
-    <string name="settings_get_api_key">احصل على مفتاح API الخاص بك → console.groq.com</string>
+    <string name="settings_get_api_key">مفتاح Groq مجاني ← console.groq.com</string>
+    <string name="settings_get_api_key_alt">مفتاح Mistral مجاني ← console.mistral.ai</string>
+    <string name="settings_provider_hint">يعمل أي مفتاح Whisper متوافق مع OpenAI. يعمل Groq مباشرةً بالإعدادات الافتراضية؛ أما مع Mistral، فاضبط نقطة النهاية على api.mistral.ai/v1/audio/transcriptions والنموذج على voxtral-mini-latest.</string>
     <string name="about_project">GitHub — حول المشروع</string>
     <string name="link_copied">تم نسخ الرابط</string>
     <string name="status_postprocessing">جارٍ المعالجة\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">تم الوصول إلى حد الأحرف. أزل بعض الكلمات أولاً.</string>
     <string name="settings_single_word_strip_punct">بدون نقطة لكلمة واحدة</string>
     <string name="settings_single_word_strip_punct_hint">مفيد للبحث الصوتي في جهات الاتصال والاستعلامات القصيرة الأخرى.</string>
+    <string name="pp_rhyme">قافية</string>
+    <string name="cd_backspace">حذف</string>
+    <string name="cd_cancel">إلغاء</string>
+    <string name="cd_cut_all">قص كل النص</string>
+    <string name="cd_enter">إدخال</string>
+    <string name="cd_hide_keyboard">إخفاء لوحة المفاتيح</string>
+    <string name="cd_pending_count">تسجيلات معلقة</string>
+    <string name="cd_record">تسجيل</string>
+    <string name="cd_retry_failed">إعادة إرسال التسجيلات التي فشل تفريغها</string>
+    <string name="cd_send">إرسال</string>
+    <string name="cd_settings">الإعدادات</string>
 </resources>

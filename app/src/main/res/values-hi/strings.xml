@@ -5,7 +5,7 @@
     <string name="status_transcribing">ट्रांसक्रिप्शन\u2026</string>
     <string name="status_error">त्रुटि: %s</string>
     <string name="settings_title">Voice Keyboard सेटिंग्स</string>
-    <string name="settings_api_key">GroQ API कुंजी</string>
+    <string name="settings_api_key">स्पीच-टू-टेक्स्ट API कुंजी</string>
     <string name="settings_model">मॉडल</string>
     <string name="settings_language">भाषा कोड</string>
     <string name="settings_endpoint">API एंडपॉइंट</string>
@@ -43,7 +43,9 @@
     <string name="update_check">अपडेट जाँचें</string>
     <string name="update_no_updates">आपके पास नवीनतम संस्करण है</string>
     <string name="update_check_failed">अपडेट की जाँच नहीं हो सकी। अपना इंटरनेट कनेक्शन जाँचें।</string>
-    <string name="settings_get_api_key">अपनी API कुंजी प्राप्त करें → console.groq.com</string>
+    <string name="settings_get_api_key">मुफ़्त Groq कुंजी → console.groq.com</string>
+    <string name="settings_get_api_key_alt">मुफ़्त Mistral कुंजी → console.mistral.ai</string>
+    <string name="settings_provider_hint">कोई भी OpenAI-संगत Whisper कुंजी काम करती है। Groq डिफ़ॉल्ट सेटिंग्स के साथ काम करता है; Mistral के लिए, एंडपॉइंट को api.mistral.ai/v1/audio/transcriptions और मॉडल को voxtral-mini-latest पर सेट करें।</string>
     <string name="about_project">GitHub — परियोजना के बारे में</string>
     <string name="link_copied">लिंक कॉपी किया गया</string>
     <string name="status_postprocessing">प्रोसेसिंग\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">अक्षर सीमा पूरी हुई। पहले कुछ शब्द हटाएँ।</string>
     <string name="settings_single_word_strip_punct">एक शब्द के लिए पूर्ण विराम छोड़ें</string>
     <string name="settings_single_word_strip_punct_hint">संपर्कों में आवाज़ खोज और अन्य छोटे प्रश्नों के लिए उपयोगी।</string>
+    <string name="pp_rhyme">तुकबंदी</string>
+    <string name="cd_backspace">मिटाएं</string>
+    <string name="cd_cancel">रद्द करें</string>
+    <string name="cd_cut_all">सारा टेक्स्ट काटें</string>
+    <string name="cd_enter">एंटर</string>
+    <string name="cd_hide_keyboard">कीबोर्ड छिपाएं</string>
+    <string name="cd_pending_count">लंबित रिकॉर्डिंग</string>
+    <string name="cd_record">रिकॉर्ड करें</string>
+    <string name="cd_retry_failed">ट्रांसक्राइब न हो पाई रिकॉर्डिंग फिर से भेजें</string>
+    <string name="cd_send">भेजें</string>
+    <string name="cd_settings">सेटिंग्स</string>
 </resources>

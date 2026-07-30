@@ -5,7 +5,7 @@
     <string name="status_transcribing">Распазнаванне\u2026</string>
     <string name="status_error">Памылка: %s</string>
     <string name="settings_title">Налады Voice Keyboard</string>
-    <string name="settings_api_key">Ключ API GroQ</string>
+    <string name="settings_api_key">API-ключ распазнавання маўлення</string>
     <string name="settings_model">Мадэль</string>
     <string name="settings_language">Код мовы</string>
     <string name="settings_endpoint">Адрас API</string>
@@ -43,7 +43,9 @@
     <string name="update_check">Праверыць абнаўленні</string>
     <string name="update_no_updates">У вас апошняя версія</string>
     <string name="update_check_failed">Не ўдалося праверыць абнаўленні. Праверце падключэнне да інтэрнэту.</string>
-    <string name="settings_get_api_key">Атрымайце свой ключ API → console.groq.com</string>
+    <string name="settings_get_api_key">Бясплатны ключ Groq → console.groq.com</string>
+    <string name="settings_get_api_key_alt">Бясплатны ключ Mistral → console.mistral.ai</string>
+    <string name="settings_provider_hint">Падыдзе любы Whisper-ключ, сумяшчальны з OpenAI. Groq працуе адразу з прадвызначанымі наладамі; для Mistral пазначце адрас api.mistral.ai/v1/audio/transcriptions і мадэль voxtral-mini-latest.</string>
     <string name="about_project">GitHub — Пра праект</string>
     <string name="link_copied">Спасылка скапіравана</string>
     <string name="status_postprocessing">Постапрацоўка\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">Дасягнуты ліміт сімвалаў. Выдаліце частку слоў.</string>
     <string name="settings_single_word_strip_punct">Без кропкі для аднаго слова</string>
     <string name="settings_single_word_strip_punct_hint">Зручна для галасавога пошуку па кантактах і іншых кароткіх запытах.</string>
+    <string name="pp_rhyme">Рыфма</string>
+    <string name="cd_backspace">Выдаліць</string>
+    <string name="cd_cancel">Скасаваць</string>
+    <string name="cd_cut_all">Выразаць увесь тэкст</string>
+    <string name="cd_enter">Увод</string>
+    <string name="cd_hide_keyboard">Схаваць клавіятуру</string>
+    <string name="cd_pending_count">Запісы ў чарзе</string>
+    <string name="cd_record">Запісаць</string>
+    <string name="cd_retry_failed">Пераслаць запісы, якія не ўдалося распазнаць</string>
+    <string name="cd_send">Даслаць</string>
+    <string name="cd_settings">Налады</string>
 </resources>

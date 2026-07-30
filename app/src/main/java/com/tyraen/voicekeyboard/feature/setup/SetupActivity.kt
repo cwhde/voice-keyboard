@@ -113,6 +113,7 @@ class SetupActivity : AppCompatActivity() {
         txtVersion = findViewById(R.id.txtVersion)
 
         val txtGetApiKey: TextView = findViewById(R.id.txtGetApiKey)
+        val txtGetApiKeyMistral: TextView = findViewById(R.id.txtGetApiKeyMistral)
         val txtGithub: TextView = findViewById(R.id.txtGithub)
 
         try {
@@ -121,6 +122,7 @@ class SetupActivity : AppCompatActivity() {
         } catch (_: Exception) {}
 
         setupLink(txtGetApiKey, "https://console.groq.com/keys")
+        setupLink(txtGetApiKeyMistral, "https://console.mistral.ai/api-keys")
         setupLink(txtGithub, "https://github.com/rustemar/voice-keyboard")
     }
 

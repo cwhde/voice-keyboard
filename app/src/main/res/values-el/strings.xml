@@ -5,7 +5,7 @@
     <string name="status_transcribing">Μεταγραφή\u2026</string>
     <string name="status_error">Σφάλμα: %s</string>
     <string name="settings_title">Ρυθμίσεις Voice Keyboard</string>
-    <string name="settings_api_key">Κλειδί API GroQ</string>
+    <string name="settings_api_key">Κλειδί API μετατροπής ομιλίας σε κείμενο</string>
     <string name="settings_model">Μοντέλο</string>
     <string name="settings_language">Κωδικός γλώσσας</string>
     <string name="settings_endpoint">Διεύθυνση API</string>
@@ -43,7 +43,9 @@
     <string name="update_check">Έλεγχος ενημερώσεων</string>
     <string name="update_no_updates">Έχετε την τελευταία έκδοση</string>
     <string name="update_check_failed">Δεν ήταν δυνατός ο έλεγχος ενημερώσεων. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο.</string>
-    <string name="settings_get_api_key">Αποκτήστε το κλειδί API σας → console.groq.com</string>
+    <string name="settings_get_api_key">Δωρεάν κλειδί Groq → console.groq.com</string>
+    <string name="settings_get_api_key_alt">Δωρεάν κλειδί Mistral → console.mistral.ai</string>
+    <string name="settings_provider_hint">Λειτουργεί οποιοδήποτε κλειδί Whisper συμβατό με OpenAI. Το Groq λειτουργεί με τις προεπιλεγμένες ρυθμίσεις· για το Mistral, ορίστε το endpoint σε api.mistral.ai/v1/audio/transcriptions και το μοντέλο σε voxtral-mini-latest.</string>
     <string name="about_project">GitHub — Σχετικά με το έργο</string>
     <string name="link_copied">Ο σύνδεσμος αντιγράφηκε</string>
     <string name="status_postprocessing">Μετεπεξεργασία\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">Επιτεύχθηκε το όριο χαρακτήρων. Αφαιρέστε πρώτα κάποιες λέξεις.</string>
     <string name="settings_single_word_strip_punct">Χωρίς τελεία για μία λέξη</string>
     <string name="settings_single_word_strip_punct_hint">Χρήσιμο για φωνητική αναζήτηση επαφών και άλλα σύντομα ερωτήματα.</string>
+    <string name="pp_rhyme">Ρίμα</string>
+    <string name="cd_backspace">Διαγραφή</string>
+    <string name="cd_cancel">Ακύρωση</string>
+    <string name="cd_cut_all">Αποκοπή όλου του κειμένου</string>
+    <string name="cd_enter">Enter</string>
+    <string name="cd_hide_keyboard">Απόκρυψη πληκτρολογίου</string>
+    <string name="cd_pending_count">Εκκρεμείς εγγραφές</string>
+    <string name="cd_record">Εγγραφή</string>
+    <string name="cd_retry_failed">Επαναποστολή εγγραφών που απέτυχαν στη μεταγραφή</string>
+    <string name="cd_send">Αποστολή</string>
+    <string name="cd_settings">Ρυθμίσεις</string>
 </resources>

@@ -5,7 +5,7 @@
     <string name="status_transcribing">Trascrizione\u2026</string>
     <string name="status_error">Errore: %s</string>
     <string name="settings_title">Impostazioni Voice Keyboard</string>
-    <string name="settings_api_key">Chiave API GroQ</string>
+    <string name="settings_api_key">Chiave API per il riconoscimento vocale</string>
     <string name="settings_model">Modello</string>
     <string name="settings_language">Codice lingua</string>
     <string name="settings_endpoint">Endpoint API</string>
@@ -43,7 +43,9 @@
     <string name="update_check">Controlla aggiornamenti</string>
     <string name="update_no_updates">Hai l\'ultima versione</string>
     <string name="update_check_failed">Impossibile verificare gli aggiornamenti. Controlla la connessione internet.</string>
-    <string name="settings_get_api_key">Ottieni la tua chiave API → console.groq.com</string>
+    <string name="settings_get_api_key">Chiave Groq gratuita → console.groq.com</string>
+    <string name="settings_get_api_key_alt">Chiave Mistral gratuita → console.mistral.ai</string>
+    <string name="settings_provider_hint">Funziona qualsiasi chiave Whisper compatibile con OpenAI. Groq funziona con le impostazioni predefinite; per Mistral, imposta l\'endpoint su api.mistral.ai/v1/audio/transcriptions e il modello su voxtral-mini-latest.</string>
     <string name="about_project">GitHub — Informazioni sul progetto</string>
     <string name="link_copied">Link copiato</string>
     <string name="status_postprocessing">Post-elaborazione\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">Limite di caratteri raggiunto. Rimuovi prima alcune parole.</string>
     <string name="settings_single_word_strip_punct">Niente punto per parola singola</string>
     <string name="settings_single_word_strip_punct_hint">Utile per la ricerca vocale nei contatti e altre query brevi.</string>
+    <string name="pp_rhyme">Rima</string>
+    <string name="cd_backspace">Elimina</string>
+    <string name="cd_cancel">Annulla</string>
+    <string name="cd_cut_all">Taglia tutto il testo</string>
+    <string name="cd_enter">Invio</string>
+    <string name="cd_hide_keyboard">Nascondi tastiera</string>
+    <string name="cd_pending_count">Registrazioni in sospeso</string>
+    <string name="cd_record">Registra</string>
+    <string name="cd_retry_failed">Reinvia le registrazioni non trascritte</string>
+    <string name="cd_send">Invia</string>
+    <string name="cd_settings">Impostazioni</string>
 </resources>
