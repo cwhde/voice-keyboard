@@ -1,6 +1,6 @@
 # Voice Keyboard
 
-Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible Whisper endpoint of your choice — by default Groq (free tier available), can be pointed at OpenAI or any other compatible provider. Optional LLM post-processing.
+Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible Whisper endpoint of your choice — by default Groq (free tier available), can be pointed at OpenAI, Mistral, or any other compatible provider. Optional LLM post-processing.
 
 <p align="center">
   <img src="docs/screenshots/keyboard.png" alt="Voice Keyboard with mic button" width="260">
