@@ -126,7 +126,7 @@ class SetupActivity : AppCompatActivity() {
         setupLink(txtGithub, "https://github.com/cwhde/voice-keyboard")
 =======
         setupLink(txtGetApiKeyMistral, "https://console.mistral.ai/api-keys")
-        setupLink(txtGithub, "https://github.com/rustemar/voice-keyboard")
+        setupLink(txtGithub, "https://github.com/cwhde/voice-keyboard")
 >>>>>>> upstream/main
     }
 
