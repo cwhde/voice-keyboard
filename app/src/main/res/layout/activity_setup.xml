@@ -72,6 +72,23 @@
             android:layout_marginTop="2dp"
             android:clickable="true"
             android:focusable="true" />
+        <TextView
+            android:id="@+id/txtGetApiKeyMistral"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_get_api_key_alt"
+            android:textColor="@color/mic_idle"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp"
+            android:clickable="true"
+            android:focusable="true" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_provider_hint"
+            android:textColor="@color/status_text"
+            android:textSize="11sp"
+            android:layout_marginTop="4dp" />
         <EditText
             android:id="@+id/editApiKey"
             android:layout_width="match_parent"

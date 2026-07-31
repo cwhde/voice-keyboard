@@ -5,7 +5,7 @@
     <string name="status_transcribing">Transkrypcja\u2026</string>
     <string name="status_error">Błąd: %s</string>
     <string name="settings_title">Ustawienia Voice Keyboard</string>
-    <string name="settings_api_key">Klucz API GroQ</string>
+    <string name="settings_api_key">Klucz API zamiany mowy na tekst</string>
     <string name="settings_model">Model</string>
     <string name="settings_language">Kod języka</string>
     <string name="settings_endpoint">Punkt końcowy API</string>
@@ -43,7 +43,9 @@
     <string name="update_check">Sprawdź aktualizacje</string>
     <string name="update_no_updates">Masz najnowszą wersję</string>
     <string name="update_check_failed">Nie udało się sprawdzić aktualizacji. Sprawdź połączenie z internetem.</string>
-    <string name="settings_get_api_key">Uzyskaj swój klucz API → console.groq.com</string>
+    <string name="settings_get_api_key">Darmowy klucz Groq → console.groq.com</string>
+    <string name="settings_get_api_key_alt">Darmowy klucz Mistral → console.mistral.ai</string>
+    <string name="settings_provider_hint">Działa każdy klucz Whisper zgodny z OpenAI. Groq działa od razu; w przypadku Mistral ustaw endpoint na api.mistral.ai/v1/audio/transcriptions, a model na voxtral-mini-latest.</string>
     <string name="about_project">GitHub — O projekcie</string>
     <string name="link_copied">Link skopiowany</string>
     <string name="status_postprocessing">Przetwarzanie\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">Osiągnięto limit znaków. Usuń najpierw kilka słów.</string>
     <string name="settings_single_word_strip_punct">Bez kropki dla pojedynczego słowa</string>
     <string name="settings_single_word_strip_punct_hint">Przydatne do wyszukiwania głosowego w kontaktach i innych krótkich zapytań.</string>
+    <string name="pp_rhyme">Rym</string>
+    <string name="cd_backspace">Usuń</string>
+    <string name="cd_cancel">Anuluj</string>
+    <string name="cd_cut_all">Wytnij cały tekst</string>
+    <string name="cd_enter">Enter</string>
+    <string name="cd_hide_keyboard">Ukryj klawiaturę</string>
+    <string name="cd_pending_count">Oczekujące nagrania</string>
+    <string name="cd_record">Nagrywaj</string>
+    <string name="cd_retry_failed">Wyślij ponownie nagrania, których nie udało się przepisać</string>
+    <string name="cd_send">Wyślij</string>
+    <string name="cd_settings">Ustawienia</string>
 </resources>

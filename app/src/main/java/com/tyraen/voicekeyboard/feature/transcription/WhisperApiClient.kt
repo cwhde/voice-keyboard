@@ -99,7 +99,7 @@ class WhisperApiClient(private val http: OkHttpClient) : SpeechToTextClient {
                 if (response.isSuccessful) {
                     Result.success(
                         HallucinationFilter.clean(
-                            rawText = responseBody,
+                            rawText = TranscriptionResponseParser.extractText(responseBody),
                             prompt = config.prompt,
                             vocabulary = config.vocabulary,
                             recordingDurationMs = config.recordingDurationMs

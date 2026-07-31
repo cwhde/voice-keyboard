@@ -5,7 +5,7 @@
     <string name="status_transcribing">文字起こし中\u2026</string>
     <string name="status_error">エラー：%s</string>
     <string name="settings_title">Voice Keyboard 設定</string>
-    <string name="settings_api_key">GroQ APIキー</string>
+    <string name="settings_api_key">音声認識APIキー</string>
     <string name="settings_model">モデル</string>
     <string name="settings_language">言語コード</string>
     <string name="settings_endpoint">APIエンドポイント</string>
@@ -43,7 +43,9 @@
     <string name="update_check">アップデートを確認</string>
     <string name="update_no_updates">最新バージョンです</string>
     <string name="update_check_failed">アップデートを確認できませんでした。インターネット接続を確認してください。</string>
-    <string name="settings_get_api_key">APIキーを取得 → console.groq.com</string>
+    <string name="settings_get_api_key">無料のGroqキー → console.groq.com</string>
+    <string name="settings_get_api_key_alt">無料のMistralキー → console.mistral.ai</string>
+    <string name="settings_provider_hint">OpenAI互換のWhisperキーであれば利用できます。Groqは初期設定のままで使えます。Mistralの場合は、エンドポイントを api.mistral.ai/v1/audio/transcriptions、モデルを voxtral-mini-latest に設定してください。</string>
     <string name="about_project">GitHub — プロジェクトについて</string>
     <string name="link_copied">リンクをコピーしました</string>
     <string name="status_postprocessing">後処理中\u2026</string>
@@ -97,4 +99,15 @@
     <string name="vocabulary_error_limit">文字数の上限に達しました。先にいくつか削除してください。</string>
     <string name="settings_single_word_strip_punct">単語のみの場合は句点を付けない</string>
     <string name="settings_single_word_strip_punct_hint">連絡先の音声検索や短いクエリに便利です。</string>
+    <string name="pp_rhyme">韻</string>
+    <string name="cd_backspace">削除</string>
+    <string name="cd_cancel">キャンセル</string>
+    <string name="cd_cut_all">すべてのテキストを切り取り</string>
+    <string name="cd_enter">改行</string>
+    <string name="cd_hide_keyboard">キーボードを非表示</string>
+    <string name="cd_pending_count">保留中の録音</string>
+    <string name="cd_record">録音</string>
+    <string name="cd_retry_failed">文字起こしに失敗した録音を再送信</string>
+    <string name="cd_send">送信</string>
+    <string name="cd_settings">設定</string>
 </resources>
