@@ -3,7 +3,7 @@ name: Build & Release APK
 on:
   push:
     branches: [main]
-    tags: ['v*']
+  tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch: # Allow manual triggering and triggering from other workflows
@@ -27,6 +27,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Make Gradlew Executable
+        run: chmod +x ./gradlew
+
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
 
@@ -40,7 +43,7 @@ jobs:
             echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
           else
             echo "No keystore secrets found. Generating a self-signed keystore..."
-            keytool -genkey -v -keystore release-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias -storepass my-password -keypass my-password -dname "CN=VoiceKeyboard, OU=None, O=None, L=None, S=None, C=US"
+            keytool -genkeypair -v -keystore release-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias -storepass my-password -keypass my-password -dname "CN=VoiceKeyboard, OU=None, O=None, L=None, S=None, C=US"
             echo "KEYSTORE_PASSWORD=my-password" >> $GITHUB_ENV
             echo "KEY_ALIAS=my-alias" >> $GITHUB_ENV
             echo "KEY_PASSWORD=my-password" >> $GITHUB_ENV
@@ -54,7 +57,7 @@ jobs:
       - name: Get version info
         id: version
         run: |
-          VERSION_NAME=$(grep 'versionName' app/build.gradle.kts | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          VERSION_NAME=$(grep 'versionName' app/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
           SHORT_SHA=${GITHUB_SHA::7}
           echo "name=${VERSION_NAME}" >> $GITHUB_OUTPUT
           echo "sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
@@ -86,6 +89,8 @@ jobs:
           tag_name: ${{ steps.tag.outputs.tag_name }}
           name: ${{ steps.tag.outputs.title }}
           prerelease: false # Always stable so Obtainium tracks it automatically!
+          make_latest: "true"
+          target_commitish: ${{ github.sha }}
           body: |
             Automated build of the Voice Keyboard.
             
@@ -94,3 +99,4 @@ jobs:
             - **Branch**: ${{ github.ref_name }}
             - **Date (UTC)**: ${{ github.event.head_commit.timestamp || 'Just now' }}
           generate_release_notes: false
+

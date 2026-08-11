@@ -16,16 +16,18 @@ jobs:
       - name: Checkout Fork
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # Fetch all history so we can merge
+          ref: main
 
       - name: Configure Git Identity
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Add Upstream Remote
         run: |
-          git remote add upstream https://github.com/rustemar/voice-keyboard.git
+          git remote add upstream https://github.com/rustemar/voice-keyboard.git || git remote set-url upstream https://github.com/rustemar/voice-keyboard.git
           git fetch upstream main
 
       - name: Record SHA
@@ -34,17 +36,18 @@ jobs:
 
       - name: Merge Upstream
         run: |
-          # Try to merge upstream/main.
-          # If there is a merge conflict, we will resolve it by keeping our customized method.xml.
-          git merge upstream/main -m "chore: sync with upstream" || {
-            echo "Merge conflict detected. Resolving method.xml conflict automatically..."
-            if git status --porcelain | grep -E '^U.*method.xml'; then
+          # Try to merge upstream/main cleanly.
+          if ! git merge upstream/main -m "chore: sync with upstream"; then
+            echo "Merge conflict detected. Resolving method.xml conflict with --ours..."
+            if git status --porcelain | grep -E 'method.xml'; then
               git checkout --ours app/src/main/res/xml/method.xml
               git add app/src/main/res/xml/method.xml
             fi
+            # For any remaining conflicts, take upstream version (--theirs) to ensure a working build
+            git checkout --theirs .
             git add .
             git commit -m "chore: sync with upstream and resolve conflicts"
-          }
+          fi
 
       - name: Apply Voice Keyboard Attributes
         run: |
@@ -65,12 +68,12 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "No new changes to push."
-            git push origin main || echo "Already up to date."
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Trigger Build
         if: steps.post.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run build.yml --ref main
+
