@@ -3,7 +3,7 @@ name: Build & Release APK
 on:
   push:
     branches: [main]
-  tags: ['v*']
+    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch: # Allow manual triggering and triggering from other workflows
