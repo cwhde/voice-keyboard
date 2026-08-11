@@ -122,12 +122,8 @@ class SetupActivity : AppCompatActivity() {
         } catch (_: Exception) {}
 
         setupLink(txtGetApiKey, "https://console.groq.com/keys")
-<<<<<<< HEAD
-        setupLink(txtGithub, "https://github.com/cwhde/voice-keyboard")
-=======
         setupLink(txtGetApiKeyMistral, "https://console.mistral.ai/api-keys")
         setupLink(txtGithub, "https://github.com/cwhde/voice-keyboard")
->>>>>>> upstream/main
     }
 
     private fun setupActions() {

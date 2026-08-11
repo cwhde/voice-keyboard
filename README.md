@@ -1,12 +1,8 @@
 # Voice Keyboard
 
-<<<<<<< HEAD
 [![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/badges/get-on-obtainium.svg)](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/cwhde/voice-keyboard)
 
-Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible Whisper endpoint of your choice — by default Groq (free tier available), can be pointed at OpenAI or any other compatible provider. Optional LLM post-processing.
-=======
 Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible Whisper endpoint of your choice — by default Groq (free tier available), can be pointed at OpenAI, Mistral, or any other compatible provider. Optional LLM post-processing.
->>>>>>> upstream/main
 
 <p align="center">
   <img src="docs/screenshots/keyboard.png" alt="Voice Keyboard with mic button" width="260">
