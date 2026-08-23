@@ -7,7 +7,8 @@
     <string name="settings_title">Voice Keyboard सेटिंग्स</string>
     <string name="settings_api_key">स्पीच-टू-टेक्स्ट API कुंजी</string>
     <string name="settings_model">मॉडल</string>
-    <string name="settings_language">भाषा कोड</string>
+    <string name="settings_language">डिक्टेशन भाषाएँ</string>
+    <string name="settings_language_hint">अल्पविराम से अलग किए गए कोड, उदाहरण: hi, en. एक से अधिक जोड़ने पर कीबोर्ड पर भाषा कुंजी दिखाई देती है। स्वचालित पहचान के लिए खाली छोड़ें।</string>
     <string name="settings_endpoint">API एंडपॉइंट</string>
     <string name="settings_auto_record">स्वतः रिकॉर्डिंग</string>
     <string name="settings_add_space">अंत में स्पेस जोड़ें</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">लंबित रिकॉर्डिंग</string>
     <string name="cd_record">रिकॉर्ड करें</string>
     <string name="cd_retry_failed">ट्रांसक्राइब न हो पाई रिकॉर्डिंग फिर से भेजें</string>
+    <string name="cd_dictation_language">डिक्टेशन भाषा</string>
     <string name="cd_send">भेजें</string>
     <string name="cd_settings">सेटिंग्स</string>
 </resources>

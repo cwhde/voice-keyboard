@@ -7,7 +7,8 @@
     <string name="settings_title">Ustawienia Voice Keyboard</string>
     <string name="settings_api_key">Klucz API zamiany mowy na tekst</string>
     <string name="settings_model">Model</string>
-    <string name="settings_language">Kod języka</string>
+    <string name="settings_language">Języki dyktowania</string>
+    <string name="settings_language_hint">Kody oddzielone przecinkami, na przykład: pl, en. Po podaniu kilku na klawiaturze pojawi się klawisz języka. Zostaw puste, aby wykrywać automatycznie.</string>
     <string name="settings_endpoint">Punkt końcowy API</string>
     <string name="settings_auto_record">Automatyczne nagrywanie</string>
     <string name="settings_add_space">Dodaj spację na końcu</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Oczekujące nagrania</string>
     <string name="cd_record">Nagrywaj</string>
     <string name="cd_retry_failed">Wyślij ponownie nagrania, których nie udało się przepisać</string>
+    <string name="cd_dictation_language">Język dyktowania</string>
     <string name="cd_send">Wyślij</string>
     <string name="cd_settings">Ustawienia</string>
 </resources>

@@ -7,7 +7,8 @@
     <string name="settings_title">Voice Keyboard Einstellungen</string>
     <string name="settings_api_key">API-Schlüssel für Spracherkennung</string>
     <string name="settings_model">Modell</string>
-    <string name="settings_language">Sprachcode</string>
+    <string name="settings_language">Diktatsprachen</string>
+    <string name="settings_language_hint">Codes durch Komma getrennt, zum Beispiel: de, en. Bei mehreren Sprachen erscheint eine Sprachtaste auf der Tastatur. Leer lassen für automatische Erkennung.</string>
     <string name="settings_endpoint">API-Endpunkt</string>
     <string name="settings_auto_record">Automatische Aufnahme</string>
     <string name="settings_add_space">Leerzeichen am Ende hinzufügen</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Ausstehende Aufnahmen</string>
     <string name="cd_record">Aufnehmen</string>
     <string name="cd_retry_failed">Fehlgeschlagene Aufnahmen erneut senden</string>
+    <string name="cd_dictation_language">Diktatsprache</string>
     <string name="cd_send">Senden</string>
     <string name="cd_settings">Einstellungen</string>
 </resources>

@@ -7,7 +7,8 @@
     <string name="settings_title">Configurações do Voice Keyboard</string>
     <string name="settings_api_key">Chave de API de voz para texto</string>
     <string name="settings_model">Modelo</string>
-    <string name="settings_language">Código do idioma</string>
+    <string name="settings_language">Idiomas de ditado</string>
+    <string name="settings_language_hint">Códigos separados por vírgulas, por exemplo: pt, en. Se indicar mais de um, aparece uma tecla de idioma no teclado. Deixe vazio para deteção automática.</string>
     <string name="settings_endpoint">Endpoint da API</string>
     <string name="settings_auto_record">Gravação automática</string>
     <string name="settings_add_space">Adicionar espaço no final</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Gravações pendentes</string>
     <string name="cd_record">Gravar</string>
     <string name="cd_retry_failed">Reenviar gravações que falharam ao transcrever</string>
+    <string name="cd_dictation_language">Idioma de ditado</string>
     <string name="cd_send">Enviar</string>
     <string name="cd_settings">Configurações</string>
 </resources>

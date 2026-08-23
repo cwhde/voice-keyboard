@@ -59,6 +59,9 @@ class SetupActivity : AppCompatActivity() {
     private val speechClient get() = ServiceLocator.speechToTextClient
     private val releaseChecker get() = ServiceLocator.releaseChecker
 
+    /** Remembered so editing the language list here doesn't reset the keyboard's current pick. */
+    private var activeLanguage: String = ""
+
     private var capture: MicrophoneCaptureSession? = null
     private var isTestRecording = false
     private var activeJob: Job? = null
@@ -207,7 +210,13 @@ class SetupActivity : AppCompatActivity() {
                 if (locale.code == currentCode) return
 
                 InterfaceLanguageManager.persist(this@SetupActivity, locale.code)
-                editLanguage.setText(locale.code)
+                // Promote the newly picked language to the front of the dictation list instead of
+                // replacing it — a user dictating in several languages shouldn't lose the others
+                // just because they changed the UI language.
+                val codes = TranscriptionLocale.parseCodes(editLanguage.text.toString())
+                val reordered = listOf(locale.code) + codes.filter { it != locale.code }
+                editLanguage.setText(TranscriptionLocale.formatCodes(reordered))
+                activeLanguage = locale.code
                 editPrompt.setText(locale.defaultPrompt)
 
                 val prefs = buildPreferences()
@@ -227,7 +236,8 @@ class SetupActivity : AppCompatActivity() {
             editApiKey.setText(p.apiKey)
             editEndpoint.setText(p.endpoint)
             editModel.setText(p.model)
-            editLanguage.setText(p.language)
+            editLanguage.setText(p.languages)
+            activeLanguage = p.effectiveLanguage
             editPrompt.setText(p.prompt)
             switchAutoRecord.isChecked = p.autoRecord
             switchAddSpace.isChecked = p.addTrailingSpace
@@ -306,8 +316,10 @@ class SetupActivity : AppCompatActivity() {
                 apiKey = prefs.apiKey,
                 endpoint = prefs.endpoint,
                 model = prefs.model,
-                language = prefs.language,
-                prompt = WhisperPromptBuilder.build(prefs.prompt, vocabulary)
+                language = prefs.effectiveLanguage,
+                prompt = WhisperPromptBuilder.build(
+                    TranscriptionLocale.promptFor(prefs.effectiveLanguage, prefs.prompt), vocabulary
+                )
             )
 
             val result = speechClient.transcribe(file, config)
@@ -332,7 +344,10 @@ class SetupActivity : AppCompatActivity() {
         apiKey = editApiKey.text.toString().trim(),
         endpoint = editEndpoint.text.toString().trim(),
         model = editModel.text.toString().trim(),
-        language = editLanguage.text.toString().trim(),
+        languages = TranscriptionLocale.formatCodes(
+            TranscriptionLocale.parseCodes(editLanguage.text.toString())
+        ),
+        activeLanguage = activeLanguage,
         autoRecord = switchAutoRecord.isChecked,
         addTrailingSpace = switchAddSpace.isChecked,
         prompt = editPrompt.text.toString().trim(),

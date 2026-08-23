@@ -18,6 +18,7 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 - **Offline-proof recovery** — recordings that can't be transcribed are saved on the device and resent automatically as soon as a validated internet connection returns; they survive closing the keyboard, app rebuilds, and reboots, and are kept until successfully sent (a "resend" button is also available to force a retry)
 - Works with any OpenAI-compatible Whisper API; ships with Groq as the default endpoint (whisper-large-v3-turbo). Free keys are available from both Groq and Mistral
 - Configurable API endpoint, model, and language
+- **Multiple dictation languages** — list several language codes in settings and a language key appears on the keyboard: tap to cycle, long-press to pick one. The formatting prompt follows the language you switch to
 - Auto-start recording when keyboard opens
 - **Custom vocabulary** — add names and technical terms to bias recognition; helps with contacts and rare words
 - **Drop period for single-word output** — handy for voice search where a trailing period gets in the way

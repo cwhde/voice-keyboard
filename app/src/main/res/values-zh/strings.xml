@@ -7,7 +7,8 @@
     <string name="settings_title">Voice Keyboard 设置</string>
     <string name="settings_api_key">语音转文字 API 密钥</string>
     <string name="settings_model">模型</string>
-    <string name="settings_language">语言代码</string>
+    <string name="settings_language">语音输入语言</string>
+    <string name="settings_language_hint">以逗号分隔的代码，例如：zh, en。指定多个时，键盘上会出现语言切换键。留空则自动检测。</string>
     <string name="settings_endpoint">API 地址</string>
     <string name="settings_auto_record">自动录音</string>
     <string name="settings_add_space">末尾添加空格</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">待处理的录音</string>
     <string name="cd_record">录音</string>
     <string name="cd_retry_failed">重新发送转写失败的录音</string>
+    <string name="cd_dictation_language">语音输入语言</string>
     <string name="cd_send">发送</string>
     <string name="cd_settings">设置</string>
 </resources>

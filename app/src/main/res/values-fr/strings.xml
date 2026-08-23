@@ -7,7 +7,8 @@
     <string name="settings_title">Paramètres Voice Keyboard</string>
     <string name="settings_api_key">Clé API de reconnaissance vocale</string>
     <string name="settings_model">Modèle</string>
-    <string name="settings_language">Code de langue</string>
+    <string name="settings_language">Langues de dictée</string>
+    <string name="settings_language_hint">Codes séparés par des virgules, par exemple : fr, en. Si vous en indiquez plusieurs, une touche de langue apparaît sur le clavier. Laissez vide pour une détection automatique.</string>
     <string name="settings_endpoint">Point d\'accès API</string>
     <string name="settings_auto_record">Enregistrement automatique</string>
     <string name="settings_add_space">Ajouter un espace à la fin</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Enregistrements en attente</string>
     <string name="cd_record">Enregistrer</string>
     <string name="cd_retry_failed">Renvoyer les enregistrements non transcrits</string>
+    <string name="cd_dictation_language">Langue de dictée</string>
     <string name="cd_send">Envoyer</string>
     <string name="cd_settings">Paramètres</string>
 </resources>

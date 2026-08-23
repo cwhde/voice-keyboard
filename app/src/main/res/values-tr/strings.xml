@@ -7,7 +7,8 @@
     <string name="settings_title">Voice Keyboard Ayarları</string>
     <string name="settings_api_key">Konuşmayı metne çevirme API anahtarı</string>
     <string name="settings_model">Model</string>
-    <string name="settings_language">Dil kodu</string>
+    <string name="settings_language">Dikte dilleri</string>
+    <string name="settings_language_hint">Virgülle ayrılmış kodlar, örneğin: tr, en. Birden fazla eklerseniz klavyede bir dil tuşu görünür. Otomatik algılama için boş bırakın.</string>
     <string name="settings_endpoint">API Adresi</string>
     <string name="settings_auto_record">Otomatik kayıt</string>
     <string name="settings_add_space">Sona boşluk ekle</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Bekleyen kayıtlar</string>
     <string name="cd_record">Kaydet</string>
     <string name="cd_retry_failed">Yazıya dökülemeyen kayıtları yeniden gönder</string>
+    <string name="cd_dictation_language">Dikte dili</string>
     <string name="cd_send">Gönder</string>
     <string name="cd_settings">Ayarlar</string>
 </resources>

@@ -7,6 +7,7 @@ import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import com.tyraen.voicekeyboard.R
+import com.tyraen.voicekeyboard.core.locale.TranscriptionLocale
 
 class InputPanelController(rootView: View) {
 
@@ -29,6 +30,11 @@ class InputPanelController(rootView: View) {
     val btnPpTerminal: ImageButton = rootView.findViewById(R.id.btnPpTerminal)
     private val ppTerminalSpacer: View = rootView.findViewById(R.id.ppTerminalSpacer)
     val btnPpTranslate: Button = rootView.findViewById(R.id.btnPpTranslate)
+
+    // Dictation language key (bottom row, left of space) — only shown when the user configured
+    // more than one language to dictate in.
+    val btnLanguage: Button = rootView.findViewById(R.id.btnLanguage)
+    private val languageSpacer: View = rootView.findViewById(R.id.languageSpacer)
 
     val animator = InputPanelAnimator(
         wave1 = rootView.findViewById(R.id.ripple1),
@@ -181,6 +187,17 @@ class InputPanelController(rootView: View) {
                 clipboardText.layoutParams = tp
             }
         }
+    }
+
+    /**
+     * Shows the dictation-language key labelled with [code]. Hidden entirely when [visible] is
+     * false (a single configured language) so the space bar keeps its full width.
+     */
+    fun updateLanguageKey(code: String, visible: Boolean) {
+        val visibility = if (visible) View.VISIBLE else View.GONE
+        btnLanguage.visibility = visibility
+        languageSpacer.visibility = visibility
+        if (visible) btnLanguage.text = TranscriptionLocale.shortLabel(code)
     }
 
     fun updateTranslateToggle(active: Boolean, langCode: String) {

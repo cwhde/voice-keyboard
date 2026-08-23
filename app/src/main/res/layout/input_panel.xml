@@ -372,6 +372,28 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button
+            android:id="@+id/btnLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/key_bg"
+            android:text="EN"
+            android:textColor="@color/key_text"
+            android:textSize="14sp"
+            android:textAllCaps="false"
+            android:contentDescription="@string/cd_dictation_language"
+            android:minWidth="44dp"
+            android:minHeight="0dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/languageSpacer"
+            android:layout_width="6dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/btnSpace"
             android:layout_width="0dp"
             android:layout_height="match_parent"
