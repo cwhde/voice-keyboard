@@ -1,3 +1,7 @@
+v1.8.8 — Period key on the keyboard
+
+- A period key sits next to the space bar, alongside the existing `?` and `!`, so you can add a full stop without switching keyboards
+
 v1.8.7 — Switch dictation language on the keyboard
 
 - Set several dictation languages in settings ("ru, en, de") and a language key appears on the keyboard next to the space bar: tap it to cycle through them, long-press to pick one from a list

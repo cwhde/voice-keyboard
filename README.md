@@ -35,6 +35,7 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 ### Keyboard
 - **Send button** (paper plane) — sends Ctrl+Enter for quick message sending in messengers
 - **Accelerating backspace** — hold to delete slowly at first, then faster
+- **Punctuation keys** — `.`, `?` and `!` next to the space bar for when dictation gets the punctuation wrong
 - **Clipboard bar** stays visible after paste for repeated pasting
 - **Graceful shutdown** — if keyboard hides during recording, audio is finalized and transcribed to clipboard
 
