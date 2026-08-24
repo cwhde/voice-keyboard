@@ -7,7 +7,8 @@
     <string name="settings_title">Voice Keyboard 설정</string>
     <string name="settings_api_key">음성 텍스트 변환 API 키</string>
     <string name="settings_model">모델</string>
-    <string name="settings_language">언어 코드</string>
+    <string name="settings_language">받아쓰기 언어</string>
+    <string name="settings_language_hint">쉼표로 구분된 코드, 예: ko, en. 두 개 이상 지정하면 키보드에 언어 키가 표시됩니다. 자동으로 감지하려면 비워 두세요.</string>
     <string name="settings_endpoint">API 엔드포인트</string>
     <string name="settings_auto_record">자동 녹음</string>
     <string name="settings_add_space">끝에 공백 추가</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">대기 중인 녹음</string>
     <string name="cd_record">녹음</string>
     <string name="cd_retry_failed">변환에 실패한 녹음 다시 보내기</string>
+    <string name="cd_dictation_language">받아쓰기 언어</string>
     <string name="cd_send">보내기</string>
     <string name="cd_settings">설정</string>
 </resources>

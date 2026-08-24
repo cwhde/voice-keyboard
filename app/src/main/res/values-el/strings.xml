@@ -7,7 +7,8 @@
     <string name="settings_title">Ρυθμίσεις Voice Keyboard</string>
     <string name="settings_api_key">Κλειδί API μετατροπής ομιλίας σε κείμενο</string>
     <string name="settings_model">Μοντέλο</string>
-    <string name="settings_language">Κωδικός γλώσσας</string>
+    <string name="settings_language">Γλώσσες υπαγόρευσης</string>
+    <string name="settings_language_hint">Κωδικοί χωρισμένοι με κόμμα, για παράδειγμα: el, en. Αν προσθέσετε περισσότερους από έναν, εμφανίζεται πλήκτρο γλώσσας στο πληκτρολόγιο. Αφήστε το κενό για αυτόματη ανίχνευση.</string>
     <string name="settings_endpoint">Διεύθυνση API</string>
     <string name="settings_auto_record">Αυτόματη εγγραφή</string>
     <string name="settings_add_space">Προσθήκη κενού στο τέλος</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Εκκρεμείς εγγραφές</string>
     <string name="cd_record">Εγγραφή</string>
     <string name="cd_retry_failed">Επαναποστολή εγγραφών που απέτυχαν στη μεταγραφή</string>
+    <string name="cd_dictation_language">Γλώσσα υπαγόρευσης</string>
     <string name="cd_send">Αποστολή</string>
     <string name="cd_settings">Ρυθμίσεις</string>
 </resources>

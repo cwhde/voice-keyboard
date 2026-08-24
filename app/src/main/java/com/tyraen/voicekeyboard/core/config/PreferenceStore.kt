@@ -22,6 +22,7 @@ class PreferenceStore(private val context: Context) {
         val ENDPOINT = stringPreferencesKey("endpoint")
         val MODEL = stringPreferencesKey("model")
         val LANGUAGE = stringPreferencesKey("language")
+        val ACTIVE_LANGUAGE = stringPreferencesKey("active_language")
         val AUTO_RECORD = booleanPreferencesKey("auto_record")
         val ADD_TRAILING_SPACE = booleanPreferencesKey("add_trailing_space")
         val PROMPT = stringPreferencesKey("prompt")
@@ -67,7 +68,8 @@ class PreferenceStore(private val context: Context) {
             apiKey = prefs[Keys.API_KEY] ?: "",
             endpoint = prefs[Keys.ENDPOINT] ?: context.getString(R.string.default_endpoint),
             model = prefs[Keys.MODEL] ?: context.getString(R.string.default_model),
-            language = prefs[Keys.LANGUAGE] ?: defaultLang,
+            languages = prefs[Keys.LANGUAGE] ?: defaultLang,
+            activeLanguage = prefs[Keys.ACTIVE_LANGUAGE] ?: "",
             autoRecord = prefs[Keys.AUTO_RECORD] ?: false,
             addTrailingSpace = prefs[Keys.ADD_TRAILING_SPACE] ?: true,
             prompt = prefs[Keys.PROMPT] ?: defaultPrompt,
@@ -80,11 +82,23 @@ class PreferenceStore(private val context: Context) {
             data[Keys.API_KEY] = prefs.apiKey
             data[Keys.ENDPOINT] = prefs.endpoint
             data[Keys.MODEL] = prefs.model
-            data[Keys.LANGUAGE] = prefs.language
+            data[Keys.LANGUAGE] = prefs.languages
+            data[Keys.ACTIVE_LANGUAGE] = prefs.effectiveLanguage
             data[Keys.AUTO_RECORD] = prefs.autoRecord
             data[Keys.ADD_TRAILING_SPACE] = prefs.addTrailingSpace
             data[Keys.PROMPT] = prefs.prompt
             data[Keys.SINGLE_WORD_STRIP_PUNCT] = prefs.singleWordStripPunctuation
+        }
+    }
+
+    /**
+     * Persists only the language picked on the keyboard. Kept separate from [save] so the IME
+     * can switch language without round-tripping (and possibly clobbering) the whole settings
+     * object, which the settings screen may be editing at the same time.
+     */
+    suspend fun saveActiveLanguage(code: String) {
+        context.store.edit { data ->
+            data[Keys.ACTIVE_LANGUAGE] = code
         }
     }
 

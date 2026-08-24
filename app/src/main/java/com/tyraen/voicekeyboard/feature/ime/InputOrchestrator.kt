@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import com.tyraen.voicekeyboard.core.config.PostProcessingPreferences
 import com.tyraen.voicekeyboard.core.config.PreferenceStore
 import com.tyraen.voicekeyboard.core.config.UserPreferences
+import com.tyraen.voicekeyboard.core.locale.TranscriptionLocale
 import com.tyraen.voicekeyboard.core.logging.DiagnosticLog
 import com.tyraen.voicekeyboard.feature.audio.MicrophoneCaptureSession
 import com.tyraen.voicekeyboard.feature.transcription.TranscriptionConfig
@@ -116,6 +117,28 @@ class InputOrchestrator(
 
     fun isPostProcessingEnabled(): Boolean = ppPreferences?.enabled == true
 
+    /** Every dictation language the user configured, in the order they listed them. */
+    fun getLanguageCodes(): List<String> = preferences?.languageCodes ?: emptyList()
+
+    /** The dictation language the next recording will use. Blank means Whisper auto-detects. */
+    fun getActiveLanguage(): String = preferences?.effectiveLanguage ?: ""
+
+    /** Advance to the next configured dictation language, wrapping around. */
+    fun cycleLanguage(): String = selectLanguage(
+        TranscriptionLocale.nextCode(getLanguageCodes(), getActiveLanguage())
+    )
+
+    /** Switch to a specific dictation language and remember it across sessions. */
+    fun selectLanguage(code: String): String {
+        val prefs = preferences ?: return code
+        if (code.isBlank() || code == prefs.effectiveLanguage) return prefs.effectiveLanguage
+
+        preferences = prefs.copy(activeLanguage = code)
+        DiagnosticLog.record(TAG, "Dictation language switched to $code")
+        scope.launch(Dispatchers.IO) { preferenceStore.saveActiveLanguage(code) }
+        return code
+    }
+
     fun getTranslateLang(): String = ppPreferences?.translateLang ?: "en"
 
     fun isTerminalVisible(): Boolean = ppPreferences?.terminalVisible == true
@@ -172,12 +195,15 @@ class InputOrchestrator(
             return
         }
 
+        val language = prefs.effectiveLanguage
         val config = TranscriptionConfig(
             apiKey = prefs.apiKey,
             endpoint = prefs.endpoint,
             model = prefs.model,
-            language = prefs.language,
-            prompt = WhisperPromptBuilder.build(prefs.prompt, vocabulary),
+            language = language,
+            prompt = WhisperPromptBuilder.build(
+                TranscriptionLocale.promptFor(language, prefs.prompt), vocabulary
+            ),
             vocabulary = vocabulary,
             recordingDurationMs = durationMs
         )

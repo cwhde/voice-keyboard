@@ -7,7 +7,8 @@
     <string name="settings_title">Настройки Voice Keyboard</string>
     <string name="settings_api_key">API-ключ для распознавания речи</string>
     <string name="settings_model">Модель</string>
-    <string name="settings_language">Код языка</string>
+    <string name="settings_language">Языки диктовки</string>
+    <string name="settings_language_hint">Коды через запятую, например: ru, en. Если указать несколько, на клавиатуре появится кнопка переключения языка. Оставьте пустым для автоопределения.</string>
     <string name="settings_endpoint">Адрес API</string>
     <string name="settings_auto_record">Автозапись</string>
     <string name="settings_add_space">Добавлять пробел в конце</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Записи в очереди</string>
     <string name="cd_record">Записать</string>
     <string name="cd_retry_failed">Повторно отправить нераспознанные записи</string>
+    <string name="cd_dictation_language">Язык диктовки</string>
     <string name="cd_send">Отправить</string>
     <string name="cd_settings">Настройки</string>
 </resources>

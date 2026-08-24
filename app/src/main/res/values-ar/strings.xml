@@ -7,7 +7,8 @@
     <string name="settings_title">إعدادات Voice Keyboard</string>
     <string name="settings_api_key">مفتاح API لتحويل الكلام إلى نص</string>
     <string name="settings_model">النموذج</string>
-    <string name="settings_language">رمز اللغة</string>
+    <string name="settings_language">لغات الإملاء</string>
+    <string name="settings_language_hint">رموز مفصولة بفواصل، مثل: ar, en. عند إضافة أكثر من لغة يظهر مفتاح لغة على لوحة المفاتيح. اتركه فارغًا للاكتشاف التلقائي.</string>
     <string name="settings_endpoint">عنوان API</string>
     <string name="settings_auto_record">تسجيل تلقائي</string>
     <string name="settings_add_space">إضافة مسافة في النهاية</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">تسجيلات معلقة</string>
     <string name="cd_record">تسجيل</string>
     <string name="cd_retry_failed">إعادة إرسال التسجيلات التي فشل تفريغها</string>
+    <string name="cd_dictation_language">لغة الإملاء</string>
     <string name="cd_send">إرسال</string>
     <string name="cd_settings">الإعدادات</string>
 </resources>

@@ -7,7 +7,8 @@
     <string name="settings_title">Налады Voice Keyboard</string>
     <string name="settings_api_key">API-ключ распазнавання маўлення</string>
     <string name="settings_model">Мадэль</string>
-    <string name="settings_language">Код мовы</string>
+    <string name="settings_language">Мовы дыктоўкі</string>
+    <string name="settings_language_hint">Коды праз коску, напрыклад: be, en. Калі ўказаць некалькі, на клавіятуры з\'явіцца кнопка пераключэння мовы. Пакіньце пустым для аўтаматычнага вызначэння.</string>
     <string name="settings_endpoint">Адрас API</string>
     <string name="settings_auto_record">Аўтаматычны запіс</string>
     <string name="settings_add_space">Дадаваць прабел у канцы</string>
@@ -108,6 +109,7 @@
     <string name="cd_pending_count">Запісы ў чарзе</string>
     <string name="cd_record">Запісаць</string>
     <string name="cd_retry_failed">Пераслаць запісы, якія не ўдалося распазнаць</string>
+    <string name="cd_dictation_language">Мова дыктоўкі</string>
     <string name="cd_send">Даслаць</string>
     <string name="cd_settings">Налады</string>
 </resources>

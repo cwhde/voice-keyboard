@@ -137,6 +137,13 @@
             android:text="@string/settings_language"
             android:textColor="@color/key_text"
             android:textSize="14sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_language_hint"
+            android:textColor="@color/status_text"
+            android:textSize="11sp"
+            android:layout_marginBottom="4dp" />
         <EditText
             android:id="@+id/editLanguage"
             android:layout_width="match_parent"

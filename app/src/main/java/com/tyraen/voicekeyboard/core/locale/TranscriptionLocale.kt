@@ -48,4 +48,52 @@ object TranscriptionLocale {
     fun resolve(code: String): LocaleEntry? = entries.find { it.code == code }
 
     fun positionOf(code: String): Int = entries.indexOfFirst { it.code == code }.coerceAtLeast(0)
+
+    /**
+     * Parses the user's dictation-language setting: a comma-separated list of Whisper
+     * language codes ("ru, en, de"). Codes are not restricted to [entries] — Whisper accepts
+     * ~99 languages and the setting has always been a free-text field, so anything the user
+     * types is passed through. Blanks are dropped, duplicates removed, order preserved.
+     *
+     * A single code (the pre-1.8.7 format) parses to a one-element list, so old settings keep
+     * working unchanged.
+     */
+    fun parseCodes(raw: String): List<String> =
+        raw.split(',', ';', ' ', '\n')
+            .map { it.trim().lowercase() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+
+    fun formatCodes(codes: List<String>): String = codes.joinToString(", ")
+
+    /** The code that follows [current] in [codes], wrapping around. Falls back to the first. */
+    fun nextCode(codes: List<String>, current: String): String {
+        if (codes.isEmpty()) return current
+        val index = codes.indexOf(current)
+        return codes[(index + 1) % codes.size]
+    }
+
+    /**
+     * Picks the Whisper style prompt to use for [code].
+     *
+     * The prompt biases transcription toward the language it is written in, so a Russian prompt
+     * left in place while dictating English degrades the result. When the stored prompt is still
+     * one of our built-in defaults (i.e. the user never customized it) we swap in the default for
+     * the language being dictated. A custom prompt is always left alone — the user wrote it on
+     * purpose and we cannot guess a translation of it.
+     */
+    fun promptFor(code: String, storedPrompt: String): String {
+        val isBuiltIn = entries.any { it.defaultPrompt == storedPrompt }
+        if (!isBuiltIn) return storedPrompt
+        return resolve(code)?.defaultPrompt ?: storedPrompt
+    }
+
+    /** Short label for the keyboard key: the code itself, uppercased ("ru" -> "RU"). */
+    fun shortLabel(code: String): String = code.uppercase()
+
+    /** "Русский (ru)" for known codes, plain "xx" for anything else the user typed. */
+    fun longLabel(code: String): String {
+        val entry = resolve(code) ?: return code
+        return "${entry.displayName} (${entry.code})"
+    }
 }

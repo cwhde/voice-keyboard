@@ -8,7 +8,8 @@
     <string name="settings_title">Voice Keyboard Settings</string>
     <string name="settings_api_key">Speech-to-text API key</string>
     <string name="settings_model">Model</string>
-    <string name="settings_language">Language Code</string>
+    <string name="settings_language">Dictation Languages</string>
+    <string name="settings_language_hint">Comma-separated codes, for example: en, ru. Add more than one and a language key appears on the keyboard. Leave empty to detect automatically.</string>
     <string name="settings_endpoint">API Endpoint</string>
     <string name="settings_auto_record">Auto-start recording</string>
     <string name="settings_add_space">Add trailing space</string>
@@ -110,6 +111,7 @@
     <string name="cd_enter">Enter</string>
     <string name="cd_pending_count">Pending recordings</string>
     <string name="cd_retry_failed">Resend recordings that failed to transcribe</string>
+    <string name="cd_dictation_language">Dictation language</string>
 
     <!-- Microphone prominent disclosure (shown once, before requesting mic permission) -->
     <string name="mic_disclosure_title">Voice Keyboard uses your microphone</string>

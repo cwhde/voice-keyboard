@@ -10,10 +10,12 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.PopupMenu
 import com.tyraen.voicekeyboard.R
 import com.tyraen.voicekeyboard.app.ServiceLocator
 import com.tyraen.voicekeyboard.core.config.ThemeManager
 import com.tyraen.voicekeyboard.core.locale.InterfaceLanguageManager
+import com.tyraen.voicekeyboard.core.locale.TranscriptionLocale
 import com.tyraen.voicekeyboard.core.logging.DiagnosticLog
 import com.tyraen.voicekeyboard.feature.audio.MicrophoneCaptureSession
 import com.tyraen.voicekeyboard.feature.setup.SetupActivity
@@ -71,7 +73,10 @@ class DictationInputMethod : InputMethodService() {
             onQueueCountChanged = { count -> panel.updateQueueCount(count) },
             onProcessingPhaseChanged = { phase -> panel.updateProcessingPhase(phase) },
             onFailedCountChanged = { count -> panel.updateFailedCount(count) },
-            onPreferencesLoaded = { refreshPostProcessingUI() }
+            onPreferencesLoaded = {
+                refreshPostProcessingUI()
+                refreshLanguageKey()
+            }
         )
 
         orchestrator.loadPreferences()
@@ -171,6 +176,12 @@ class DictationInputMethod : InputMethodService() {
 
         btnSend.setOnClickListener { keystrokes.sendCtrlEnter() }
 
+        // Dictation language: tap cycles through the configured codes, long-press picks one.
+        panel.btnLanguage.setOnClickListener {
+            panel.updateLanguageKey(orchestrator.cycleLanguage(), visible = true)
+        }
+        panel.btnLanguage.setOnLongClickListener { showLanguagePicker(); true }
+
         // Clipboard bar
         panel.clipboardBar.setOnClickListener {
             keystrokes.pasteFromClipboard(this)
@@ -179,6 +190,28 @@ class DictationInputMethod : InputMethodService() {
 
         // Post-processing toggle buttons
         wirePostProcessingToggles()
+    }
+
+    /** The key only earns its space when there is something to switch between. */
+    private fun refreshLanguageKey() {
+        if (!::panel.isInitialized) return
+        val codes = orchestrator.getLanguageCodes()
+        panel.updateLanguageKey(orchestrator.getActiveLanguage(), visible = codes.size > 1)
+    }
+
+    private fun showLanguagePicker() {
+        val codes = orchestrator.getLanguageCodes()
+        if (codes.size < 2) return
+
+        val menu = PopupMenu(panel.btnLanguage.context, panel.btnLanguage)
+        codes.forEachIndexed { index, code ->
+            menu.menu.add(0, index, index, TranscriptionLocale.longLabel(code))
+        }
+        menu.setOnMenuItemClickListener { item ->
+            panel.updateLanguageKey(orchestrator.selectLanguage(codes[item.itemId]), visible = true)
+            true
+        }
+        menu.show()
     }
 
     private fun setupClipboardMonitor() {
