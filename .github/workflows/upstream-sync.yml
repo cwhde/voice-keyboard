@@ -9,6 +9,10 @@ permissions:
   contents: write
   actions: write
 
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -32,21 +36,44 @@ jobs:
 
       - name: Record SHA
         id: pre
-        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Merge Upstream
+        env:
+          BEFORE_SHA: ${{ steps.pre.outputs.sha }}
         run: |
-          # Try to merge upstream/main cleanly.
-          if ! git merge upstream/main -m "chore: sync with upstream"; then
+          set -euo pipefail
+
+          # Stage the merge without committing so the tree can be adjusted first.
+          if ! git merge --no-commit --no-ff upstream/main; then
             echo "Merge conflict detected. Resolving method.xml conflict with --ours..."
             if git status --porcelain | grep -E 'method.xml'; then
               git checkout --ours app/src/main/res/xml/method.xml
               git add app/src/main/res/xml/method.xml
             fi
             # For any remaining conflicts, take upstream version (--theirs) to ensure a working build
-            git checkout --theirs .
-            git add .
-            git commit -m "chore: sync with upstream and resolve conflicts"
+            git checkout --theirs . || true
+            git add -A
+          fi
+
+          if git ls-files -u | grep -q .; then
+            echo "::error::Unresolved merge conflicts remain, aborting."
+            exit 1
+          fi
+
+          # GITHUB_TOKEN cannot create or update files under .github/workflows; GitHub
+          # rejects such a push with "refusing to allow a GitHub App to create or update
+          # workflow ... without `workflows` permission". Upstream keeps adding its own
+          # workflow files, which made every sync push fail. The fork therefore keeps its
+          # own CI definitions and never inherits upstream's.
+          git rm -r -q --cached .github/workflows > /dev/null 2>&1 || true
+          rm -rf .github/workflows
+          git checkout "$BEFORE_SHA" -- .github/workflows
+
+          if git diff --cached --quiet; then
+            echo "Nothing to commit; upstream is already merged."
+          else
+            git commit -m "chore: sync with upstream"
           fi
 
       - name: Apply Voice Keyboard Attributes
@@ -57,18 +84,19 @@ jobs:
       - name: Push and Detect Changes
         id: post
         run: |
+          set -euo pipefail
           BEFORE_SHA="${{ steps.pre.outputs.sha }}"
           if [ -n "$(git status --porcelain)" ]; then
-            git add .
+            git add -A
             git commit -m "chore: automatically re-apply voice keyboard attributes"
           fi
           AFTER_SHA=$(git rev-parse HEAD)
           if [ "$BEFORE_SHA" != "$AFTER_SHA" ]; then
             git push origin main
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "No new changes to push."
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Trigger Build
@@ -76,4 +104,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run build.yml --ref main
-
