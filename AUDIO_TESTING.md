@@ -6,7 +6,7 @@ as `com.tyraen.voicekeyboard.audiotest`. It has no keyboard service or
 automatic updater and cannot replace the regular app or its settings.
 
 Download `VoiceKeyboardAudioTest.apk` from an `audio-test-*` prerelease
-on the [releases page](https://github.com/rustemar/voice-keyboard/releases).
+on the [releases page](https://github.com/cwhde/voice-keyboard/releases).
 These tags do not match F-Droid's current `^v[0-9.]+$` update pattern.
 The regular keyboard updater skips prereleases. A checksum is attached
 to each test download.

@@ -11,7 +11,7 @@ _Last updated: 2026‑11‑02_
 - Optional post‑processing sends the transcribed text to the language‑model provider you configure (OpenAI, Anthropic, or an OpenAI‑compatible one such as OpenRouter, Groq, Mistral or DeepSeek), again using **your own API key**. Recent dictations are included as context only if you enable that separate option, which is off by default.
 - Optional **selected-text actions** send the passage you explicitly select, together with the chosen editing instruction and your reference vocabulary, to your configured post-processing provider. This beta is off by default; requests start only after you choose an action, and results require review before replacement.
 - All settings, API keys, saved dictations, diagnostic logs, and crash reports stay on your device. They are explicitly excluded from Google Drive backup and device‑transfer.
-- The app is open source: <https://github.com/rustemar/voice-keyboard>.
+- The app is open source: <https://github.com/cwhde/voice-keyboard>.
 
 ## Data the app handles
 
@@ -133,7 +133,7 @@ You can verify all of the above by reading the source.
 
 The update check is **off by default**. The app asks once — on a launch after you have acknowledged the microphone notice — whether it may check GitHub for new versions, explaining that updates obtained this way come straight from the developer and are not reviewed by the app store you installed from; declining is remembered and the switch stays in settings under "Check GitHub for updates".
 
-While it is off, the app never contacts GitHub on its own. While it is on, it polls `https://api.github.com/repos/rustemar/voice-keyboard/releases` when you open the setup screen. The "Check for updates" button works either way, because pressing it is itself a deliberate request. If a newer release exists you are shown the changelog, told where the file comes from, and offered the choice to download the APK.
+While it is off, the app never contacts GitHub on its own. While it is on, it polls `https://api.github.com/repos/cwhde/voice-keyboard/releases` when you open the setup screen. The "Check for updates" button works either way, because pressing it is itself a deliberate request. If a newer release exists you are shown the changelog, told where the file comes from, and offered the choice to download the APK.
 
 GitHub's privacy policy applies to those requests: <https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement>.
 
@@ -147,4 +147,4 @@ If this policy changes in a way that affects what data leaves your device, the c
 
 ## Contact
 
-Questions, concerns, or false‑positive reports: open an issue at <https://github.com/rustemar/voice-keyboard/issues> or email <hukutu4.eth@gmail.com>.
+Questions, concerns, or false‑positive reports: open an issue at <https://github.com/cwhde/voice-keyboard/issues> or email <hukutu4.eth@gmail.com>.

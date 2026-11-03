@@ -59,7 +59,7 @@ class MicrophonePermissionActivity : AppCompatActivity() {
                 }
             }
             .setNeutralButton(R.string.mic_disclosure_privacy) { _, _ ->
-                LinkOpener.open(this, "https://github.com/rustemar/voice-keyboard/blob/main/PRIVACY.md")
+                LinkOpener.open(this, "https://github.com/cwhde/voice-keyboard/blob/main/PRIVACY.md")
                 showDisclosure()
             }
             .setNegativeButton(android.R.string.cancel) { _, _ -> finish() }

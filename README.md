@@ -1,5 +1,7 @@
 # Voice Keyboard
 
+[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/badges/get-on-obtainium.svg)](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/cwhde/voice-keyboard)
+
 Android keyboard (IME) for speech-to-text. Sends audio to OpenAI-compatible transcription endpoints or chat endpoints accepting `input_audio` — by default Groq (free tier available), with optional LLM post-processing.
 
 <p align="center">
@@ -68,7 +70,7 @@ Android keyboard (IME) for speech-to-text. Sends audio to OpenAI-compatible tran
 
 ## Setup
 
-1. Install Voice Keyboard from [F-Droid](https://f-droid.org/en/packages/com.tyraen.voicekeyboard/) or [GitHub Releases](https://github.com/rustemar/voice-keyboard/releases). For automatic updates from GitHub, see [Installation and updates](#installation-and-updates).
+1. Install Voice Keyboard from [F-Droid](https://f-droid.org/en/packages/com.tyraen.voicekeyboard/) or [GitHub Releases](https://github.com/cwhde/voice-keyboard/releases). For automatic updates from GitHub, see [Installation and updates](#installation-and-updates).
 2. Open the app and tap **Enable keyboard** (or go to Settings → System → Languages & input → On-screen keyboard)
 3. Enable "Voice Keyboard"; the app shows whether it is enabled and which keyboard is active
 4. Enter a speech-to-text API key. Supported endpoints:
@@ -127,7 +129,7 @@ Apps choosing a fixed component or using their own speech/pronunciation engine m
 **Obtainium:** use [Obtainium](https://github.com/ImranR98/Obtainium) to install and track Voice Keyboard releases directly from GitHub.
 
 1. Install **Obtainium itself** from its [releases page](https://github.com/ImranR98/Obtainium/releases).
-2. In Obtainium, tap **Add App** and paste `https://github.com/rustemar/voice-keyboard`.
+2. In Obtainium, tap **Add App** and paste `https://github.com/cwhde/voice-keyboard`.
 3. Obtainium will install Voice Keyboard and notify you when new releases are published.
 
 ## Troubleshooting
@@ -153,7 +155,7 @@ Before first use of the microphone, the app shows a one-time disclosure explaini
 ## Building from source
 
 ```bash
-git clone https://github.com/rustemar/voice-keyboard.git
+git clone https://github.com/cwhde/voice-keyboard.git
 cd voice-keyboard
 ./gradlew assembleDebug
 ```

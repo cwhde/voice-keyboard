@@ -47,7 +47,7 @@ class SetupActivity : AppCompatActivity() {
         private const val COLOR_OK = "#4CAF50"
         private const val COLOR_ERROR = "#EF4444"
         private const val COLOR_WARN = "#FBBF24"
-        private const val PRIVACY_URL = "https://github.com/rustemar/voice-keyboard/blob/main/PRIVACY.md"
+        private const val PRIVACY_URL = "https://github.com/cwhde/voice-keyboard/blob/main/PRIVACY.md"
 
         // A tap already admitted here must survive closing or recreating this activity. Keep all
         // keyboard-option writes, including Apply, ordered so an older form cannot undo a new tap.
@@ -249,7 +249,7 @@ class SetupActivity : AppCompatActivity() {
         setupLink(txtGetApiKeyMistral, "https://console.mistral.ai/api-keys")
         setupLink(findViewById(R.id.txtGetApiKeyOpenRouter), "https://openrouter.ai/settings/keys")
         setupLink(findViewById(R.id.txtOpenRouterModels), "https://openrouter.ai/collections/speech-to-text-models")
-        setupLink(txtGithub, "https://github.com/rustemar/voice-keyboard")
+        setupLink(txtGithub, "https://github.com/cwhde/voice-keyboard")
     }
 
     private fun setupActions() {

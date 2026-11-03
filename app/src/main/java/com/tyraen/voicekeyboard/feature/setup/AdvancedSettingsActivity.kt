@@ -69,7 +69,7 @@ class AdvancedSettingsActivity : AppCompatActivity() {
             }
         }
         findViewById<Button>(R.id.btnRecognitionGuide).setOnClickListener {
-            LinkOpener.open(this, "https://github.com/rustemar/voice-keyboard#voice-input-for-other-apps")
+            LinkOpener.open(this, "https://github.com/cwhde/voice-keyboard#voice-input-for-other-apps")
         }
     }
 
