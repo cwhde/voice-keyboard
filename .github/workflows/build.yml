@@ -33,26 +33,75 @@ jobs:
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
 
-      - name: Setup Keystore
+      - name: Set up signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "Using user-provided keystore secrets..."
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release-keystore.jks
-            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
-          else
-            echo "No keystore secrets found. Generating a self-signed keystore..."
-            keytool -genkeypair -v -keystore release-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias -storepass my-password -keypass my-password -dname "CN=VoiceKeyboard, OU=None, O=None, L=None, S=None, C=US"
-            echo "KEYSTORE_PASSWORD=my-password" >> $GITHUB_ENV
-            echo "KEY_ALIAS=my-alias" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=my-password" >> $GITHUB_ENV
+          set -euo pipefail
+
+          missing=""
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+
+          if [ -n "$missing" ]; then
+            if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+              echo "::warning::Signing secrets missing ($missing); this pull request build stays unsigned."
+              exit 0
+            fi
+            # A release built without the repository keystore would be signed with a
+            # throwaway key and could never be updated over an installed build.
+            echo "::error::Signing secrets missing:$missing. Refusing to publish an APK signed with a throwaway key."
+            exit 1
           fi
+
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release-keystore.p12"
+          echo "Signing keystore ready."
 
       - name: Build release APK
         env:
-          KEYSTORE_PATH: ${{ github.workspace }}/release-keystore.jks
+          KEYSTORE_PATH: ${{ github.workspace }}/release-keystore.p12
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assembleRelease
+
+      - name: Verify APK signature
+        if: github.event_name != 'pull_request'
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
+          "$APKSIGNER" verify --print-certs "$APK"
+
+          APK_FP=$("$APKSIGNER" verify --print-certs "$APK" \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' \
+            | tr -d ':' | tr 'A-F' 'a-f')
+          KS_FP=$(keytool -list -v -keystore "$GITHUB_WORKSPACE/release-keystore.p12" \
+            -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" \
+            | sed -n 's/^[[:space:]]*SHA256: //p' \
+            | tr -d ':' | tr 'A-F' 'a-f')
+
+          echo "keystore certificate : $KS_FP"
+          echo "APK signer certificate: $APK_FP"
+          if [ -z "$APK_FP" ] || [ "$APK_FP" != "$KS_FP" ]; then
+            echo "::error::APK is not signed with the repository signing keystore."
+            exit 1
+          fi
+
+          {
+            echo "### APK signature"
+            echo ""
+            echo "- certificate SHA-256: \`$APK_FP\`"
+            echo "- matches the repository signing keystore"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Get version info
         id: version
