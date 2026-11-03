@@ -103,4 +103,4 @@ jobs:
         if: steps.post.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run build.yml --ref main
+        run: gh workflow run build.yml --ref main -R "$GITHUB_REPOSITORY"
