@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Voice Keyboard</string>
+    <string name="app_name" translatable="false">Voice Keyboard</string>
     <string name="status_idle">Tap mic to record</string>
     <string name="status_recording">Recording\u2026</string>
     <string name="status_transcribing">Transcribing\u2026</string>
@@ -12,8 +12,13 @@
     <string name="settings_language_hint">Comma-separated codes, for example: en, ru. Add more than one and a language key appears on the keyboard. Leave empty to detect automatically.</string>
     <string name="settings_endpoint">API Endpoint</string>
     <string name="settings_auto_record">Auto-start recording</string>
+    <string name="settings_auto_record_hint">Start recording automatically when Voice Keyboard opens. Off by default. Auto-stop on silence controls when recording ends.</string>
+    <string name="subtype_label">Voice input</string>
+    <string name="settings_return_to_previous_keyboard">Return to previous keyboard after dictation</string>
+    <string name="settings_return_to_previous_keyboard_hint">Turn on if you open Voice Keyboard only to dictate, from another keyboard\'s mic key or the keyboard list: once your text is typed, that keyboard comes back by itself. Leave off to dictate several times in a row, or if Voice Keyboard is your main keyboard. The key in the top corner always takes you back.</string>
+    <string name="cd_previous_keyboard">Switch to previous keyboard</string>
     <string name="settings_add_space">Add trailing space</string>
-    <string name="settings_apply">Apply</string>
+    <string name="settings_apply">Save and check key</string>
     <string name="settings_enable_instructions">To enable this keyboard:\n\n1. Go to Settings → System → Languages &amp; input → On-screen keyboard\n2. Enable \"Voice Keyboard\"\n3. Switch to it in any text field</string>
     <string name="test_section_title">Test Voice Recognition</string>
     <string name="test_section_hint">Record a short phrase to test that everything works correctly</string>
@@ -32,10 +37,10 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="settings_interface_language">Interface Language</string>
-    <string name="default_endpoint">https://api.groq.com/openai/v1/audio/transcriptions</string>
-    <string name="default_model">whisper-large-v3-turbo</string>
-    <string name="default_language">en</string>
-    <string name="default_prompt">Hello, how are you? I\'m doing well. This is a properly formatted sentence, with punctuation and capitalization.</string>
+    <string name="default_endpoint" translatable="false">https://api.groq.com/openai/v1/audio/transcriptions</string>
+    <string name="default_model" translatable="false">whisper-large-v3-turbo</string>
+    <string name="default_language" translatable="false">en</string>
+    <string name="default_prompt" translatable="false">Hello, how are you? I\'m doing well. This is a properly formatted sentence, with punctuation and capitalization.</string>
     <string name="update_available">Update Available</string>
     <string name="update_new_version">New version %s is available.</string>
     <string name="update_button">Update</string>
@@ -49,15 +54,25 @@
     <string name="update_check">Check for updates</string>
     <string name="update_no_updates">You are on the latest version</string>
     <string name="update_check_failed">Could not check for updates. Check your internet connection.</string>
+    <string name="update_check_auto">Check GitHub for updates</string>
+    <string name="update_check_auto_hint">Off by default. Updates fetched this way come straight from the developer and are not reviewed by the app store you installed from, such as F-Droid.</string>
+    <string name="update_consent_title">Check GitHub for updates?</string>
+    <string name="update_consent_body">Voice Keyboard can check GitHub Releases for a newer version and install it for you.\n\nUpdates fetched this way come straight from the developer. They are not reviewed by the app store you installed the app from, such as F-Droid, and its checks do not apply to them.\n\nThe check stays off until you turn it on, and you can change it any time in settings.</string>
+    <string name="update_consent_enable">Turn on</string>
+    <string name="update_consent_decline">Leave off</string>
+    <string name="update_source_disclosure">This APK is downloaded from GitHub Releases. It comes straight from the developer and is not reviewed by the app store you installed from.</string>
     <string name="settings_get_api_key">Free Groq key → console.groq.com</string>
     <string name="settings_get_api_key_alt">Free Mistral key → console.mistral.ai</string>
-    <string name="settings_provider_hint">Any OpenAI-compatible Whisper key works. Groq works out of the box; for Mistral, set the endpoint to api.mistral.ai/v1/audio/transcriptions and the model to voxtral-mini-latest.</string>
+    <string name="settings_provider_hint">Use an API key from the selected speech provider. Presets fill in the address and model.</string>
     <string name="about_project">GitHub — About the project</string>
     <string name="link_copied">Link copied</string>
+    <string name="no_browser_link_copied">No browser to open the link, so it was copied</string>
     <string name="status_postprocessing">Post-processing\u2026</string>
     <string name="pp_settings_title">Post-processing</string>
     <string name="pp_settings_description">Clean up, shorten, or enhance transcribed text. Requires an API key from OpenAI, Claude, or any OpenAI-compatible provider such as OpenRouter. Modes are switched with the toggle buttons on the keyboard itself.</string>
     <string name="pp_enable">Enable post-processing</string>
+    <string name="pp_context_enable">Use recent dictations as context</string>
+    <string name="pp_context_hint">Sends up to 5 recent dictations to your post-processing provider as context. Kept only in memory; cleared when you switch apps or turn this off. Slightly increases request size.</string>
     <string name="pp_provider">API Provider</string>
     <string name="pp_provider_openai">OpenAI-compatible (OpenAI, OpenRouter, Groq…)</string>
     <string name="pp_provider_claude">Anthropic (Claude)</string>
@@ -65,6 +80,7 @@
     <string name="pp_api_key">API Key</string>
     <string name="pp_endpoint">API Endpoint</string>
     <string name="pp_endpoint_hint">Leave empty for default, or paste your provider\'s URL (e.g. https://openrouter.ai/api/v1; the rest of the path is added automatically)</string>
+    <string name="endpoint_unencrypted_warning">Not encrypted (http): everything sent to this address, your API key included, can be intercepted on the way. Use it only for your own server on a network you trust.</string>
     <string name="pp_model">Model</string>
     <string name="pp_model_hint">Leave empty for default. Gateways like OpenRouter need the vendor prefix, e.g. openai/gpt-4o-mini</string>
     <string name="pp_saved">Settings saved.</string>
@@ -83,6 +99,7 @@
     <string name="pp_prompt_suffix_hint">Appended to every prompt</string>
     <string name="pp_rhyme">Rhyme</string>
     <string name="pp_translate">Translate</string>
+    <string name="pp_translate_into">Translate into %1$s</string>
     <string name="pp_translate_title">Translation</string>
     <string name="pp_translate_lang">Target language</string>
     <string name="pp_translate_model">Translation model</string>
@@ -90,7 +107,8 @@
     <string name="pp_terminal">Terminal</string>
     <string name="pp_terminal_visible">Show terminal mode button</string>
     <string name="pp_terminal_visible_hint">Converts voice input into shell commands. Useful for SSH/terminal work.</string>
-    <string name="pp_open_settings">Post-processing settings</string>
+    <string name="pp_open_settings">Post-processing (optional)</string>
+    <string name="settings_postprocessing_hint">Text cleanup uses a separately configured API key. Speech recognition works without post-processing.</string>
     <string name="vocabulary_open_settings">Custom vocabulary</string>
     <string name="vocabulary_title">Custom vocabulary</string>
     <string name="vocabulary_description">Add names, technical terms, or any words that get misrecognized. The list is sent as a hint to the recognizer to improve accuracy. For names, write them with the capitalization you want in the output.</string>
@@ -104,14 +122,20 @@
     <string name="vocabulary_error_limit">Character limit reached. Remove some words first.</string>
     <string name="settings_single_word_strip_punct">Drop period for single-word output</string>
     <string name="settings_single_word_strip_punct_hint">Useful for voice search in contacts and other short queries.</string>
-    <string name="cd_hide_keyboard">Hide keyboard</string>
     <string name="cd_settings">Settings</string>
     <string name="cd_cut_all">Cut all text</string>
     <string name="cd_backspace">Delete</string>
     <string name="cd_record">Record</string>
     <string name="cd_send">Send</string>
-    <string name="cd_cancel">Cancel</string>
+    <string name="cd_cancel">Cancel latest dictation</string>
     <string name="cd_enter">Enter</string>
+    <string name="cd_action_go">Go</string>
+    <string name="cd_action_search">Search</string>
+    <string name="cd_action_next">Next</string>
+    <string name="cd_action_previous">Previous</string>
+    <string name="cd_action_done">Done</string>
+    <string name="cd_new_line">New line</string>
+    <string name="status_password_field">Voice input is off in password fields</string>
     <string name="cd_pending_count">Pending recordings</string>
     <string name="cd_retry_failed">Resend recordings that failed to transcribe</string>
     <string name="cd_dictation_language">Dictation language</string>
@@ -121,4 +145,71 @@
     <string name="mic_disclosure_body">When you tap the microphone button, this keyboard records audio and sends it to a speech‑to‑text service to turn your voice into text.\n\n• What is sent: only the audio from a recording you start.\n• Where it goes: by default, to Groq Whisper. You can change this in settings to any OpenAI‑compatible Whisper endpoint, including OpenAI itself.\n• Authentication: requests are made with the API key you provide; the app has no built‑in account.\n• What is not collected: the app has no analytics, no advertising, and never uploads your audio anywhere except to the endpoint you configured.\n\nAudio is sent only while you are actively recording — never in the background.</string>
     <string name="mic_disclosure_privacy">View privacy policy</string>
     <string name="mic_disclosure_continue">I understand, continue</string>
+    <string name="mic_permission_open_settings">Microphone access was denied. Allow it in the app settings that just opened.</string>
+
+    <!-- Keyboard status line -->
+    <string name="error_mic_permission">Microphone permission required</string>
+    <string name="error_mic_unavailable">Microphone is busy or unavailable</string>
+    <string name="error_api_key_missing">API key not set — add it in settings</string>
+    <string name="notice_discard_failed_confirm">Hold again to delete the unsent recordings</string>
+    <string name="notice_discard_failed_done">Deleted unsent recordings: %d</string>
+
+    <!-- Setup screen: keyboard state, tests, logs, crash report -->
+    <string name="keyboard_status_enabled">Voice Keyboard is enabled</string>
+    <string name="keyboard_status_disabled">Voice Keyboard is not enabled yet</string>
+    <string name="keyboard_status_active">Voice Keyboard is your current keyboard. To type in these fields, switch to another keyboard.</string>
+    <string name="keyboard_open_settings">Enable keyboard</string>
+    <string name="keyboard_switch">Switch keyboard</string>
+    <string name="settings_saved">Settings saved.</string>
+    <string name="test_status_set_key">Set the API key first and press \"Apply\"</string>
+    <string name="test_status_recording">Recording… tap \"Stop &amp; Transcribe\" when done</string>
+    <string name="test_status_failed">Recording failed</string>
+    <string name="test_status_success">Success</string>
+    <string name="test_status_no_speech">No speech detected. Try speaking louder.</string>
+    <string name="logs_share">Share</string>
+    <string name="logs_saved_to">Saved: %s</string>
+    <string name="logs_none">No logs to save</string>
+    <string name="logs_cleared">Logs cleared</string>
+    <string name="crash_title">The app crashed last time</string>
+    <string name="crash_message">Share or save the crash report so the problem can be fixed?</string>
+    <string name="crash_share">Share</string>
+    <string name="crash_save">Save</string>
+    <string name="crash_dismiss">Dismiss</string>
+    <string name="crash_save_failed">Could not save the report</string>
+    <string name="preset_label">Provider preset</string>
+    <string name="preset_custom">Custom</string>
+
+    <!-- Optional Android speech integration -->
+    <string name="settings_advanced">Advanced settings</string>
+    <string name="recognition_apps">Voice input for other apps</string>
+    <string name="recognition_apps_hint">Allow apps to use your saved speech provider and API key. Needs a network connection to the speech provider. No post-processing or recent context.</string>
+    <string name="recognition_select">Android voice input settings</string>
+    <string name="recognition_select_hint">Choose Voice Keyboard if Android offers a speech-service selector. Compatible apps can also open its dictation window without changing the default service. Apps with their own recognizer may ignore this choice.</string>
+    <string name="recognition_disabled">Voice input for other apps is off. Enable it in Advanced settings.</string>
+    <string name="recognition_start">Start dictation</string>
+    <string name="recognition_failed">Recognition failed. Check your speech provider settings.</string>
+
+    <!-- Optional compact terminal panel -->
+    <string name="terminal_compact_show">Compact terminal keyboard</string>
+    <string name="terminal_compact_hint">Use a smaller panel while Terminal mode is enabled in post-processing. The expand button shows all keyboard controls.</string>
+    <string name="terminal_compact_expand">Show full keyboard</string>
+    <string name="recognition_setup">Setup instructions</string>
+    <string name="saved_texts_title">Saved texts</string>
+    <string name="saved_texts_count">Saved texts: %1$d</string>
+    <string name="saved_texts_empty">No saved texts</string>
+    <string name="saved_texts_insert">Insert</string>
+    <string name="saved_texts_copy">Copy</string>
+    <string name="saved_texts_delete">Delete</string>
+    <string name="saved_texts_delete_confirm">Delete this saved text?</string>
+    <string name="saved_texts_close">Close saved texts</string>
+    <string name="saved_texts_copied">Text copied</string>
+    <string name="saved_texts_insert_failed">Choose a text field and try again.</string>
+    <string name="saved_texts_action_failed">Could not complete this action. Try again.</string>
+    <!-- Optional silence endpointing in the keyboard -->
+    <string name="settings_silence_auto_stop">Auto-stop on silence</string>
+    <string name="settings_silence_auto_stop_hint">Stop after a pause in your voice, accounting for steady background noise. Changing noise or other voices can affect detection. Off by default.</string>
+    <string name="settings_silence_auto_stop_pause">Pause before stopping</string>
+    <string name="silence_auto_stop_seconds">%1$s s</string>
+    <string name="cd_silence_auto_stop_on">Auto-stop on silence is on. Tap to turn off.</string>
+    <string name="cd_silence_auto_stop_off">Auto-stop on silence is off. Tap to turn on.</string>
 </resources>

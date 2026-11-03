@@ -6,10 +6,13 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.tyraen.voicekeyboard.R
 import com.tyraen.voicekeyboard.core.locale.TranscriptionLocale
+import com.tyraen.voicekeyboard.feature.vocabulary.TextDictionary
+import com.tyraen.voicekeyboard.feature.vocabulary.TextReplacementRules
 import kotlinx.coroutines.flow.first
 import java.util.Locale
 
@@ -27,7 +30,12 @@ class PreferenceStore(private val context: Context) {
         val ADD_TRAILING_SPACE = booleanPreferencesKey("add_trailing_space")
         val PROMPT = stringPreferencesKey("prompt")
         val SINGLE_WORD_STRIP_PUNCT = booleanPreferencesKey("single_word_strip_punct")
+        val RETURN_TO_PREVIOUS_KEYBOARD = booleanPreferencesKey("return_to_previous_keyboard")
+        val SILENCE_AUTO_STOP_ENABLED = booleanPreferencesKey("silence_auto_stop_enabled")
+        val SILENCE_AUTO_STOP_PAUSE_MS = intPreferencesKey("silence_auto_stop_pause_ms")
         val VOCABULARY = stringPreferencesKey("vocabulary")
+        val POSTPROCESSING_VOCABULARY = stringPreferencesKey("postprocessing_vocabulary")
+        val TEXT_REPLACEMENTS = stringPreferencesKey("text_replacements")
 
         // Post-processing config
         val PP_ENABLED = booleanPreferencesKey("pp_enabled")
@@ -43,9 +51,18 @@ class PreferenceStore(private val context: Context) {
         val PP_TRANSLATE_LANG = stringPreferencesKey("pp_translate_lang")
         val PP_TRANSLATE_MODEL = stringPreferencesKey("pp_translate_model")
         val PP_TERMINAL_VISIBLE = booleanPreferencesKey("pp_terminal_visible")
+        val PP_CONTEXT_ENABLED = booleanPreferencesKey("pp_context_enabled")
 
         // Prominent disclosure for microphone use (shown once before requesting RECORD_AUDIO)
         val MIC_DISCLOSURE_ACCEPTED = booleanPreferencesKey("mic_disclosure_accepted")
+        // GitHub update check. Off until the user turns it on: downloading an APK outside the
+        // store the app came from needs explicit, informed consent (F-Droid inclusion policy).
+        val UPDATE_CHECK_ENABLED = booleanPreferencesKey("update_check_enabled")
+        val UPDATE_CONSENT_SHOWN = booleanPreferencesKey("update_consent_shown")
+
+        // Set after an explicit denial with the rationale gone ("Don't ask again"). Android reports
+        // "never asked" and that state identically; this flag tells them apart.
+        val MIC_PERMISSION_DENIED_FOREVER = booleanPreferencesKey("mic_permission_denied_forever")
 
         // Post-processing toggle states (persist between sessions)
         val PP_FIX_ACTIVE = booleanPreferencesKey("pp_fix_active")
@@ -73,7 +90,12 @@ class PreferenceStore(private val context: Context) {
             autoRecord = prefs[Keys.AUTO_RECORD] ?: false,
             addTrailingSpace = prefs[Keys.ADD_TRAILING_SPACE] ?: true,
             prompt = prefs[Keys.PROMPT] ?: defaultPrompt,
-            singleWordStripPunctuation = prefs[Keys.SINGLE_WORD_STRIP_PUNCT] ?: false
+            singleWordStripPunctuation = prefs[Keys.SINGLE_WORD_STRIP_PUNCT] ?: false,
+            returnToPreviousKeyboard = prefs[Keys.RETURN_TO_PREVIOUS_KEYBOARD] ?: false,
+            silenceAutoStopEnabled = prefs[Keys.SILENCE_AUTO_STOP_ENABLED] ?: false,
+            silenceAutoStopPauseMs = SilenceAutoStopSettings.normalizePauseMs(
+                prefs[Keys.SILENCE_AUTO_STOP_PAUSE_MS] ?: SilenceAutoStopSettings.DEFAULT_PAUSE_MS
+            )
         )
     }
 
@@ -88,6 +110,10 @@ class PreferenceStore(private val context: Context) {
             data[Keys.ADD_TRAILING_SPACE] = prefs.addTrailingSpace
             data[Keys.PROMPT] = prefs.prompt
             data[Keys.SINGLE_WORD_STRIP_PUNCT] = prefs.singleWordStripPunctuation
+            data[Keys.RETURN_TO_PREVIOUS_KEYBOARD] = prefs.returnToPreviousKeyboard
+            data[Keys.SILENCE_AUTO_STOP_ENABLED] = prefs.silenceAutoStopEnabled
+            data[Keys.SILENCE_AUTO_STOP_PAUSE_MS] =
+                SilenceAutoStopSettings.normalizePauseMs(prefs.silenceAutoStopPauseMs)
         }
     }
 
@@ -113,6 +139,28 @@ class PreferenceStore(private val context: Context) {
         }
     }
 
+    suspend fun loadTextDictionary(): TextDictionaryPreferences {
+        val prefs = context.store.data.first()
+        return TextDictionaryPreferences(prefs[Keys.POSTPROCESSING_VOCABULARY] ?: "",
+            prefs[Keys.TEXT_REPLACEMENTS] ?: "")
+    }
+
+    suspend fun loadPostProcessingVocabulary(): String = loadTextDictionary().postProcessingVocabulary
+
+    suspend fun savePostProcessingVocabulary(value: String) {
+        val normalized = TextDictionary.normalizeVocabulary(value)
+        require(normalized.length <= TextDictionaryPreferences.MAX_POSTPROCESSING_CHARS)
+        context.store.edit { it[Keys.POSTPROCESSING_VOCABULARY] = normalized }
+    }
+
+    suspend fun loadTextReplacements(): List<TextReplacementRules.Rule> =
+        TextDictionary.decodeRules(loadTextDictionary().replacementRules)
+
+    suspend fun saveTextReplacements(rules: List<TextReplacementRules.Rule>) {
+        val encoded = TextDictionary.encodeRules(rules)
+        context.store.edit { it[Keys.TEXT_REPLACEMENTS] = encoded }
+    }
+
     suspend fun loadPostProcessing(): PostProcessingPreferences {
         val prefs = context.store.data.first()
         return PostProcessingPreferences(
@@ -128,7 +176,8 @@ class PreferenceStore(private val context: Context) {
             promptSuffix = prefs[Keys.PP_PROMPT_SUFFIX] ?: "",
             translateLang = prefs[Keys.PP_TRANSLATE_LANG] ?: "en",
             translateModel = prefs[Keys.PP_TRANSLATE_MODEL] ?: "",
-            terminalVisible = prefs[Keys.PP_TERMINAL_VISIBLE] ?: false
+            terminalVisible = prefs[Keys.PP_TERMINAL_VISIBLE] ?: false,
+            contextEnabled = prefs[Keys.PP_CONTEXT_ENABLED] ?: false
         )
     }
 
@@ -147,7 +196,36 @@ class PreferenceStore(private val context: Context) {
             data[Keys.PP_TRANSLATE_LANG] = prefs.translateLang
             data[Keys.PP_TRANSLATE_MODEL] = prefs.translateModel
             data[Keys.PP_TERMINAL_VISIBLE] = prefs.terminalVisible
+            data[Keys.PP_CONTEXT_ENABLED] = prefs.contextEnabled
         }
+    }
+
+    suspend fun setPostProcessingEnabled(value: Boolean) {
+        context.store.edit { data ->
+            data[Keys.PP_ENABLED] = value
+        }
+    }
+
+    suspend fun setPostProcessingTerminalVisible(value: Boolean) {
+        context.store.edit { data ->
+            data[Keys.PP_TERMINAL_VISIBLE] = value
+        }
+    }
+
+    suspend fun setPostProcessingContextEnabled(value: Boolean) {
+        context.store.edit { data ->
+            data[Keys.PP_CONTEXT_ENABLED] = value
+        }
+    }
+
+    /**
+     * One-time repair for prompts that were saved as overrides although they only repeated the
+     * shipped default of some version; blanking them lets default improvements reach those users.
+     */
+    suspend fun normalizeStoredPrompts() {
+        val current = loadPostProcessing()
+        val normalized = current.withNormalizedPrompts()
+        if (normalized != current) savePostProcessing(normalized)
     }
 
     suspend fun isMicDisclosureAccepted(): Boolean {
@@ -158,6 +236,74 @@ class PreferenceStore(private val context: Context) {
     suspend fun setMicDisclosureAccepted() {
         context.store.edit { data ->
             data[Keys.MIC_DISCLOSURE_ACCEPTED] = true
+        }
+    }
+
+    /** Whether the app may poll GitHub Releases on its own. Default false. */
+    suspend fun isUpdateCheckEnabled(): Boolean {
+        val prefs = context.store.data.first()
+        return prefs[Keys.UPDATE_CHECK_ENABLED] ?: false
+    }
+
+    suspend fun setUpdateCheckEnabled(value: Boolean) {
+        context.store.edit { data ->
+            data[Keys.UPDATE_CHECK_ENABLED] = value
+            data[Keys.UPDATE_CONSENT_SHOWN] = true
+        }
+    }
+
+    /** Keyboard switches save only their own value, without applying unfinished provider edits. */
+    suspend fun setAutoRecord(value: Boolean) {
+        context.store.edit { it[Keys.AUTO_RECORD] = value }
+    }
+
+    suspend fun setAddTrailingSpace(value: Boolean) {
+        context.store.edit { it[Keys.ADD_TRAILING_SPACE] = value }
+    }
+
+    suspend fun setSingleWordStripPunctuation(value: Boolean) {
+        context.store.edit { it[Keys.SINGLE_WORD_STRIP_PUNCT] = value }
+    }
+
+    /** Saved as soon as the switch is flipped, not only with the rest of the screen on Apply. */
+    suspend fun setReturnToPreviousKeyboard(value: Boolean) {
+        context.store.edit { data ->
+            data[Keys.RETURN_TO_PREVIOUS_KEYBOARD] = value
+        }
+    }
+
+    /** Only the keyboard toggle changes, without overwriting settings being edited elsewhere. */
+    suspend fun setSilenceAutoStopEnabled(value: Boolean) {
+        context.store.edit { it[Keys.SILENCE_AUTO_STOP_ENABLED] = value }
+    }
+
+    /** Slider changes persist independently of the provider's network validation on Apply. */
+    suspend fun setSilenceAutoStopPauseMs(value: Int) {
+        context.store.edit {
+            it[Keys.SILENCE_AUTO_STOP_PAUSE_MS] = SilenceAutoStopSettings.normalizePauseMs(value)
+        }
+    }
+
+    /** Whether the one-time "may I check for updates?" dialog has been answered. */
+    suspend fun isUpdateConsentShown(): Boolean {
+        val prefs = context.store.data.first()
+        return prefs[Keys.UPDATE_CONSENT_SHOWN] ?: false
+    }
+
+    suspend fun setUpdateConsentShown() {
+        context.store.edit { data ->
+            data[Keys.UPDATE_CONSENT_SHOWN] = true
+        }
+    }
+
+    suspend fun isMicPermissionDeniedForever(): Boolean {
+        val prefs = context.store.data.first()
+        return prefs[Keys.MIC_PERMISSION_DENIED_FOREVER] ?: false
+    }
+
+    suspend fun setMicPermissionDeniedForever(value: Boolean) {
+        context.store.edit { data ->
+            data[Keys.MIC_PERMISSION_DENIED_FOREVER] = value
         }
     }
 

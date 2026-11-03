@@ -30,6 +30,7 @@ class KeystrokeDispatcher(private val connectionProvider: () -> InputConnection?
     }
 
     fun startBackspaceRepeat() {
+        stopBackspaceRepeat()
         deleteBack()
         backspaceInterval = BACKSPACE_INITIAL_INTERVAL
         repeatRunnable = object : Runnable {
@@ -56,11 +57,60 @@ class KeystrokeDispatcher(private val connectionProvider: () -> InputConnection?
         connectionProvider()?.commitText(text, 1)
     }
 
+    /**
+     * Commit a dictated chunk with context-aware padding: a space in front when the cursor sits
+     * right after a word, the configured trailing space only when nothing is already there.
+     * Returns false if context cannot be read, the connection/session changes, or commit fails,
+     * so the caller can retain the text. A remote editor can still ignore an acknowledged commit.
+     */
+    fun insertDictation(
+        text: String,
+        addTrailingSpace: Boolean,
+        canInsert: () -> Boolean = { true }
+    ): Boolean {
+        val ic = connectionProvider() ?: return false
+        return DictationInsertion.insert(
+            text = text,
+            addTrailingSpace = addTrailingSpace,
+            readBefore = { ic.getTextBeforeCursor(1, 0) },
+            readAfter = { ic.getTextAfterCursor(1, 0) },
+            canCommit = { connectionProvider() === ic && canInsert() },
+            commit = { ic.commitText(it, 1) }
+        )
+    }
+
+    /**
+     * Type a punctuation mark the way a person would: dictation leaves "hello " behind, and a
+     * tap on the period key should produce "hello." rather than "hello .".
+     */
+    fun insertPunctuation(mark: String) {
+        val ic = connectionProvider() ?: return
+        ic.beginBatchEdit()
+        if (DictationSpacing.eatsPrecedingSpace(ic.getTextBeforeCursor(1, 0))) {
+            ic.deleteSurroundingText(1, 0)
+        }
+        ic.commitText(mark, 1)
+        ic.endBatchEdit()
+    }
+
     fun sendEnter() {
         connectionProvider()?.let { ic ->
             ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
             ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
         }
+    }
+
+    /** Enter as the field wants it: its editor action (Search, Go, Send…) or a plain Enter key. */
+    fun pressEnter(enter: EditorField.Enter) {
+        when (enter) {
+            EditorField.Enter.NewLine -> sendEnter()
+            is EditorField.Enter.Action -> connectionProvider()?.performEditorAction(enter.id)
+        }
+    }
+
+    /** A line break typed as text, for fields where the Enter key runs an action instead. */
+    fun insertNewLine() {
+        connectionProvider()?.commitText("\n", 1)
     }
 
     fun sendCtrlEnter() {

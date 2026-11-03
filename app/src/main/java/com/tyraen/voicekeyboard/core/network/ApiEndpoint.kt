@@ -1,5 +1,7 @@
 package com.tyraen.voicekeyboard.core.network
 
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+
 /**
  * Makes a pasted API address usable as-is.
  *
@@ -18,12 +20,34 @@ package com.tyraen.voicekeyboard.core.network
  */
 object ApiEndpoint {
 
+    /** A complete chat URL opts into audio-in-chat; base URLs still use Whisper by default. */
+    fun usesChatCompletions(url: String): Boolean =
+        pathOf(url).trimEnd('/').endsWith("/chat/completions")
+
+    /** OpenRouter's public API hosts, including a scheme-less address while editing settings. */
+    fun isOpenRouter(url: String): Boolean =
+        when (complete(url, "").toHttpUrlOrNull()?.host) {
+            "openrouter.ai", "eu.openrouter.ai" -> true
+            else -> false
+        }
+
     fun complete(raw: String, defaultPath: String): String {
         var url = raw.trim().trimEnd('/')
         if (url.isEmpty()) return ""
         if (!url.contains("://")) url = "https://$url"
         if (url.contains('?') || url.contains('#')) return url
         return if (pathOf(url).endsWith("/v1")) url + defaultPath else url
+    }
+
+    /**
+     * True for a plain `http://` address: audio, text and the API key would travel unencrypted.
+     * Allowed for a self-hosted server on the user's own network; the settings screens say so.
+     * A server on the phone itself (localhost, 127.x) is left out: nothing leaves the device.
+     */
+    fun isUnencrypted(url: String): Boolean {
+        if (!url.trim().startsWith("http://", ignoreCase = true)) return false
+        val host = hostOf(url)
+        return host != "localhost" && !host.startsWith("127.")
     }
 
     /** Host part of the URL, lowercased, without credentials or port; "" when there is none. */

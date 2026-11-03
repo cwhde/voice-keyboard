@@ -2,8 +2,6 @@ package com.tyraen.voicekeyboard.feature.update
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -18,8 +16,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.tyraen.voicekeyboard.R
 import com.tyraen.voicekeyboard.core.logging.DiagnosticLog
+import com.tyraen.voicekeyboard.core.ui.LinkOpener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,12 +30,35 @@ import org.json.JSONArray
 class ReleaseChecker(private val http: OkHttpClient) {
 
     companion object {
+        // The API returns 30 releases a page by default; 100 keeps the combined notes complete for
+        // anyone many versions behind, still in one unauthenticated request.
         private const val RELEASES_URL =
-            "https://api.github.com/repos/cwhde/voice-keyboard/releases"
+            "https://api.github.com/repos/rustemar/voice-keyboard/releases?per_page=100"
+        private val RELEASE_HEADING = Regex("^v\\d+(\\.\\d+)+ — .*")
     }
 
     private val installer = ApkInstaller(http)
     private val downloadScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    /** The running update download, its progress dialog and the screen that owns both. */
+    private var downloadJob: Job? = null
+    private var downloadDialog: AlertDialog? = null
+    private var downloadOwner: Context? = null
+
+    /**
+     * Stops an update download: the dialog's Cancel button, and the settings screen going away
+     * (the dialog belongs to it, and a result arriving after it is gone was dropped anyway).
+     * With an [owner], only a download started from that screen is stopped.
+     */
+    fun cancelDownload(owner: Context? = null) {
+        if (owner != null && owner !== downloadOwner) return
+        downloadJob?.cancel()
+        installer.cancelDownload()
+        downloadDialog?.takeIf { it.isShowing }?.dismiss()
+        downloadJob = null
+        downloadDialog = null
+        downloadOwner = null
+    }
 
     suspend fun checkForUpdate(context: Context, showUpToDate: Boolean = false) {
         val currentVersion = getCurrentVersion(context) ?: return
@@ -72,7 +95,8 @@ class ReleaseChecker(private val http: OkHttpClient) {
 
                     for (i in 0 until jsonArray.length()) {
                         val json = jsonArray.getJSONObject(i)
-                        if (json.optBoolean("draft", false)) continue
+                        // Drafts and prereleases are never offered; compareVersions would read "1.9.3-rc1" as 1.9.3.
+                        if (json.optBoolean("draft", false) || json.optBoolean("prerelease", false)) continue
 
                         val tagName = json.getString("tag_name").removePrefix("v")
                         if (!isVersionNewer(tagName, currentVersion)) continue
@@ -92,13 +116,13 @@ class ReleaseChecker(private val http: OkHttpClient) {
                             }
                         }
 
-                        newer.add(ReleaseDetails(tagName, htmlUrl, apkUrl, body))
+                        newer.add(ReleaseDetails(tagName, htmlUrl, apkUrl, ownNotes(body)))
                     }
 
-                    newer.sortedByDescending { it.version }
+                    newer.sortedWith { a, b -> compareVersions(b.version, a.version) }
                 }
             } catch (e: Exception) {
-                DiagnosticLog.record("ReleaseChecker", "Failed to check for updates: ${e.message}")
+                DiagnosticLog.recordFailure("ReleaseChecker", "Failed to check for updates", e)
                 null
             }
         }
@@ -111,17 +135,32 @@ class ReleaseChecker(private val http: OkHttpClient) {
         }
     }
 
-    internal fun isVersionNewer(remote: String, local: String): Boolean {
-        val remoteParts = remote.split(".").mapNotNull { it.toIntOrNull() }
-        val localParts = local.split(".").mapNotNull { it.toIntOrNull() }
+    internal fun isVersionNewer(remote: String, local: String): Boolean = compareVersions(remote, local) > 0
 
-        for (i in 0 until maxOf(remoteParts.size, localParts.size)) {
-            val r = remoteParts.getOrElse(i) { 0 }
-            val l = localParts.getOrElse(i) { 0 }
-            if (r > l) return true
-            if (r < l) return false
+    /**
+     * Only the release's own notes. Bodies published before v1.9.2 carried every older section too
+     * ("v1.9.0 — …" headings further down), and the dialog joins the notes of every newer release,
+     * so a user several versions behind read the same notes twice.
+     */
+    internal fun ownNotes(body: String): String =
+        body.replace("\r\n", "\n").lineSequence()
+            .takeWhile { !RELEASE_HEADING.matches(it) }
+            .joinToString("\n")
+            .trim()
+
+    /**
+     * Numeric comparison of dotted versions, so 1.10.0 sorts above 1.9.3 (a string sort would not).
+     * A suffix after '-' is ignored: "1.7.2-rc1" and a fork's "1.9.1-jf.6" count as 1.7.2 and 1.9.1.
+     */
+    internal fun compareVersions(a: String, b: String): Int {
+        fun parts(v: String) = v.substringBefore('-').split(".").map { it.takeWhile(Char::isDigit).toIntOrNull() ?: 0 }
+        val ap = parts(a)
+        val bp = parts(b)
+        for (i in 0 until maxOf(ap.size, bp.size)) {
+            val cmp = ap.getOrElse(i) { 0 }.compareTo(bp.getOrElse(i) { 0 })
+            if (cmp != 0) return cmp
         }
-        return false
+        return 0
     }
 
     private fun presentUpdateDialog(context: Context, releases: List<ReleaseDetails>) {
@@ -129,6 +168,10 @@ class ReleaseChecker(private val http: OkHttpClient) {
 
         val message = buildString {
             append(context.getString(R.string.update_new_version, latest.version))
+            // Shown on every offer, manual check included: the user has to know this APK comes
+            // straight from the developer and carries none of the store's checks.
+            append("\n\n")
+            append(context.getString(R.string.update_source_disclosure))
             for (release in releases) {
                 append("\n\n--- v${release.version} ---\n")
                 if (release.changeNotes.isNotBlank()) {
@@ -163,7 +206,7 @@ class ReleaseChecker(private val http: OkHttpClient) {
             }
         } else {
             builder.setPositiveButton(context.getString(R.string.update_open_browser)) { _, _ ->
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(latest.pageUrl)))
+                LinkOpener.open(context, latest.pageUrl)
             }
         }
 
@@ -194,7 +237,7 @@ class ReleaseChecker(private val http: OkHttpClient) {
             val url = span.url
             result.setSpan(object : ClickableSpan() {
                 override fun onClick(widget: View) {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    LinkOpener.open(context, url)
                 }
             }, span.start, span.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
@@ -206,7 +249,7 @@ class ReleaseChecker(private val http: OkHttpClient) {
                 val url = match.value
                 result.setSpan(object : ClickableSpan() {
                     override fun onClick(widget: View) {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        LinkOpener.open(context, url)
                     }
                 }, match.range.first, match.range.last + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
@@ -235,16 +278,21 @@ class ReleaseChecker(private val http: OkHttpClient) {
             addView(progressBar)
         }
 
+        // Cancel has to stop the download for real: it used to only close the dialog, and the
+        // install prompt still appeared once the file was in.
+        cancelDownload()
         val dialog = AlertDialog.Builder(context)
             .setTitle(context.getString(R.string.update_downloading))
             .setView(layout)
             .setCancelable(false)
-            .setNegativeButton(context.getString(R.string.update_cancel), null)
+            .setNegativeButton(context.getString(R.string.update_cancel)) { _, _ -> cancelDownload() }
             .show()
+        downloadDialog = dialog
+        downloadOwner = context
 
         val activity = context as? Activity ?: return
 
-        downloadScope.launch {
+        downloadJob = downloadScope.launch {
             val file = withContext(Dispatchers.IO) {
                 installer.download(context, apkUrl, version) { percent ->
                     activity.runOnUiThread {
@@ -256,6 +304,9 @@ class ReleaseChecker(private val http: OkHttpClient) {
                 }
             }
 
+            downloadJob = null
+            downloadDialog = null
+            downloadOwner = null
             if (activity.isFinishing || activity.isDestroyed) return@launch
             dialog.dismiss()
 

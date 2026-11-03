@@ -3,62 +3,152 @@ package com.tyraen.voicekeyboard.feature.audio
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import com.tyraen.voicekeyboard.core.logging.DiagnosticLog
 import kotlinx.coroutines.*
 import java.io.File
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
 class MicrophoneCaptureSession(private val context: Context) {
 
     companion object {
+        private const val TAG = "Capture"
         private val fileSeq = AtomicLong(0)
+
+        /**
+         * Opus, 48 kHz mono. Reduced from 200 kbps in v1.9.0 to make uploads smaller.
+         * Whisper's 16 kHz inference rate alone does not establish equal recognition accuracy
+         * at different lossy encoding bitrates.
+         */
+        private const val OPUS_BITRATE = 64_000
+
+        /**
+         * Up to 1.9.6 recordings went to externalCacheDir. The queue deletes or parks every file it
+         * finishes, so anything still there is a leftover from a crash; removed at startup.
+         */
+        fun deleteLegacyRecordings(context: Context) {
+            context.externalCacheDir?.listFiles { f -> f.name.startsWith("recording_") }?.forEach { it.delete() }
+        }
+        private const val AAC_BITRATE = 128_000
+
+        /** Nothing this short contains speech, and MediaRecorder refuses to finalize it anyway. */
+        const val MIN_CAPTURE_MS = 300L
     }
 
     private var recorder: MediaRecorder? = null
+    private var pcmCapture: PcmCaptureSession? = null
+    private var microphoneLease: MicrophoneGate.Lease? = null
     private var levelMonitor: Job? = null
     private val scope = MainScope()
     private var startedAtMs: Long = 0
+
+    /** The file of the capture in progress. Null once [finalize] handed it over or [abort] deleted it. */
     var capturedFile: File? = null
         private set
     var lastDurationMs: Long = 0
         private set
 
     val isActive: Boolean
-        get() = recorder != null
+        get() = recorder != null || pcmCapture != null
 
-    fun begin(onAmplitude: (Int) -> Unit): File {
+    /** Capture PCM privately while an independent worker detects speech locally. */
+    fun beginPcm(
+        onAmplitude: (Int) -> Unit,
+        onPcm: (ShortArray, Int, Long) -> Unit,
+        onClosed: () -> Unit = {},
+        onUnexpectedStop: () -> Unit = {}
+    ): Boolean {
+        if (pcmCapture != null) return true
+        if (recorder != null) return false
+        // A retained recovery source must not be overwritten after process-wide sequence resets.
+        val file = File(context.cacheDir, "recording_${fileSeq.getAndIncrement()}_${UUID.randomUUID()}.wav")
+        val lease = MicrophoneGate.shared.acquire() ?: return false
+        try {
+            pcmCapture = PcmCaptureSession.start(context, file, lease, onAmplitude, onPcm, onClosed, onUnexpectedStop)
+        } catch (error: Exception) {
+            DiagnosticLog.recordFailure(TAG, "PCM microphone unavailable", error)
+            lease.close()
+            file.delete()
+            return false
+        }
+        capturedFile = file
+        lastDurationMs = 0
+        return true
+    }
+
+    /** Detach the pending file from this view before returning; no worker is joined on Main. */
+    fun finalizeAsync(): CaptureFinalization {
+        val pcm = pcmCapture
+        if (pcm == null) {
+            val file = finalize()
+            return CaptureFinalization(lastDurationMs, CompletableDeferred(file)) { file?.delete() }
+        }
+        pcmCapture = null
+        capturedFile = null
+        val finalization = pcm.finish()
+        lastDurationMs = finalization.durationMs
+        return finalization
+    }
+
+    /**
+     * Start recording. Returns false, leaving the session idle, when the microphone cannot be
+     * opened: another app holds it, storage is unavailable, or the OEM recorder refuses to start.
+     * Those used to propagate out of the mic button and take the keyboard process down.
+     */
+    fun begin(onAmplitude: (Int) -> Unit): Boolean {
+        if (recorder != null) return true
+        if (pcmCapture != null) return false
+
         val useOpus = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         val extension = if (useOpus) "ogg" else "m4a"
         // Process-wide unique name: a fresh capture session is created per input view, so a plain
         // per-instance counter could collide with another view's still-pending recording_0.
-        val file = File(context.externalCacheDir, "recording_${fileSeq.getAndIncrement()}.$extension")
-        capturedFile = file
+        // The private cache, not externalCacheDir: on Android 9 and lower other apps with the
+        // storage permission can read the external one.
+        val dir = context.cacheDir
+        val file = File(dir, "recording_${fileSeq.getAndIncrement()}.$extension")
+        val lease = MicrophoneGate.shared.acquire() ?: return false
 
-        val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            MediaRecorder(context)
-        } else {
-            @Suppress("DEPRECATION")
-            MediaRecorder()
-        }
-
-        mr.apply {
-            setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION)
-            if (useOpus) {
-                setOutputFormat(MediaRecorder.OutputFormat.OGG)
-                setAudioEncoder(MediaRecorder.AudioEncoder.OPUS)
-                setAudioSamplingRate(48000)
-                setAudioEncodingBitRate(200000)
+        var candidate: MediaRecorder? = null
+        try {
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
             } else {
-                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setAudioSamplingRate(44100)
-                setAudioEncodingBitRate(128000)
+                @Suppress("DEPRECATION")
+                MediaRecorder()
             }
-            setAudioChannels(1)
-            setOutputFile(file.absolutePath)
-            prepare()
-            start()
+            candidate = mr
+            mr.apply {
+                setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION)
+                if (useOpus) {
+                    setOutputFormat(MediaRecorder.OutputFormat.OGG)
+                    setAudioEncoder(MediaRecorder.AudioEncoder.OPUS)
+                    setAudioSamplingRate(48000)
+                    setAudioEncodingBitRate(OPUS_BITRATE)
+                } else {
+                    setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                    setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                    setAudioSamplingRate(44100)
+                    setAudioEncodingBitRate(AAC_BITRATE)
+                }
+                setAudioChannels(1)
+                setOutputFile(file.absolutePath)
+                prepare()
+                start()
+            }
+        } catch (e: Exception) {
+            DiagnosticLog.recordFailure(TAG, "Microphone unavailable", e)
+            runCatching { candidate?.reset() }
+            runCatching { candidate?.release() }
+            lease.close()
+            file.delete()
+            return false
         }
+
+        val mr = checkNotNull(candidate)
         recorder = mr
+        microphoneLease = lease
+        capturedFile = file
         startedAtMs = System.currentTimeMillis()
         lastDurationMs = 0
 
@@ -73,27 +163,65 @@ class MicrophoneCaptureSession(private val context: Context) {
             }
         }
 
+        return true
+    }
+
+    /**
+     * Stop recording and hand the file to the caller, who owns it from now on: a later [abort] or
+     * [release] no longer touches it, so tearing the input view down (keyboard switch, theme
+     * rebuild) cannot delete a recording the queue is still uploading.
+     *
+     * Returns null when nothing usable was captured. An immediate double tap makes
+     * `MediaRecorder.stop()` throw and leaves a malformed file behind; uploading that earned a
+     * permanent "needs attention" badge that resend could never clear.
+     */
+    fun finalize(): File? {
+        check(pcmCapture == null) { "PCM captures require asynchronous finalization" }
+        levelMonitor?.cancel()
+        levelMonitor = null
+        val mr = recorder ?: return null
+        recorder = null
+        val file = capturedFile
+        capturedFile = null
+        lastDurationMs = if (startedAtMs > 0) System.currentTimeMillis() - startedAtMs else 0
+
+        val stopped = try {
+            mr.stop()
+            true
+        } catch (e: Exception) {
+            DiagnosticLog.recordFailure(TAG, "stop failed after ${lastDurationMs}ms", e)
+            false
+        }
+        runCatching { mr.release() }
+        microphoneLease?.close()
+        microphoneLease = null
+
+        val usable = stopped && lastDurationMs >= MIN_CAPTURE_MS &&
+            file != null && file.exists() && file.length() > 0L
+        if (!usable) {
+            DiagnosticLog.record(TAG, "Discarding unusable capture (${lastDurationMs}ms)")
+            file?.delete()
+            return null
+        }
         return file
     }
 
-    fun finalize(): File? {
-        levelMonitor?.cancel()
-        levelMonitor = null
-        try {
-            recorder?.apply { stop(); release() }
-        } catch (_: Exception) {}
-        recorder = null
-        lastDurationMs = if (startedAtMs > 0) System.currentTimeMillis() - startedAtMs else 0
-        return capturedFile
-    }
-
+    /** Throw away the capture in progress, if any. Files already handed over by [finalize] are kept. */
     fun abort() {
+        val pcm = pcmCapture
+        pcmCapture = null
+        pcm?.cancel()
         levelMonitor?.cancel()
         levelMonitor = null
-        try {
-            recorder?.apply { stop(); release() }
-        } catch (_: Exception) {}
+        recorder?.let { mr ->
+            try {
+                mr.stop()
+            } catch (_: Exception) {}
+            runCatching { mr.release() }
+        }
         recorder = null
+        microphoneLease?.close()
+        microphoneLease = null
         capturedFile?.delete()
         capturedFile = null
     }

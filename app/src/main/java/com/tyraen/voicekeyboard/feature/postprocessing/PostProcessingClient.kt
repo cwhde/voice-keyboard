@@ -2,6 +2,8 @@ package com.tyraen.voicekeyboard.feature.postprocessing
 
 import com.tyraen.voicekeyboard.core.config.PostProcessingPreferences
 import com.tyraen.voicekeyboard.core.logging.DiagnosticLog
+import com.tyraen.voicekeyboard.core.network.awaitResponse
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -63,10 +65,14 @@ class PostProcessingClient(private val httpClient: OkHttpClient) {
                     maxTokens = null
                 )
             }
-            DiagnosticLog.record(TAG, "Success: ${result.take(80)}")
+            DiagnosticLog.record(TAG, "Success: ${result.length} characters")
             Result.success(result)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            DiagnosticLog.recordFailure(TAG, "Failed", e)
+            // Provider error bodies can echo the selected passage. Keep editor text out of logs.
+            val failure = if (e is ApiException) "HTTP ${e.statusCode}" else e.javaClass.simpleName
+            DiagnosticLog.recordFailure(TAG, "Failed: $failure")
             Result.failure(e)
         }
     }
@@ -78,6 +84,8 @@ class PostProcessingClient(private val httpClient: OkHttpClient) {
             callOpenAIOrClaude("Reply with exactly: OK", prefs, maxTokens = 50)
             DiagnosticLog.record(TAG, "Validation success")
             Result.success("API key is valid.")
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: ApiException) {
             DiagnosticLog.recordFailure(TAG, "Validation failed", e)
             if (e.statusCode == 429) {
@@ -91,14 +99,16 @@ class PostProcessingClient(private val httpClient: OkHttpClient) {
         }
     }
 
-    private fun callOpenAIOrClaude(prompt: String, prefs: PostProcessingPreferences, maxTokens: Int): String {
+    private suspend fun callOpenAIOrClaude(prompt: String, prefs: PostProcessingPreferences, maxTokens: Int): String {
         return when (prefs.provider) {
             PostProcessingPreferences.PROVIDER_CLAUDE -> callClaude(systemInstruction = null, userText = prompt, prefs = prefs, maxTokens = maxTokens)
-            else -> callOpenAI(systemInstruction = null, userText = prompt, prefs = prefs, maxTokens = maxTokens)
+            // No token cap here: OpenAI's reasoning models reject max_tokens outright, and the
+            // "Reply with exactly: OK" probe is tiny anyway. Claude requires it.
+            else -> callOpenAI(systemInstruction = null, userText = prompt, prefs = prefs, maxTokens = null)
         }
     }
 
-    private fun callOpenAI(
+    private suspend fun callOpenAI(
         systemInstruction: String?,
         userText: String,
         prefs: PostProcessingPreferences,
@@ -117,41 +127,52 @@ class PostProcessingClient(private val httpClient: OkHttpClient) {
             put("content", userText)
         })
 
-        val body = JSONObject().apply {
+        fun body(withTemperature: Boolean) = JSONObject().apply {
             put("model", model)
-            put("temperature", prefs.resolvedTemperature().toDouble())
+            if (withTemperature) put("temperature", prefs.resolvedTemperature().toDouble())
             if (maxTokens != null) put("max_tokens", maxTokens)
             put("messages", messages)
         }
 
+        var (code, responseBody) = postOpenAI(prefs, body(withTemperature = true))
+        // OpenAI's reasoning models (o-series, gpt-5 family) accept only the default temperature
+        // and answer 400 to anything else. Retrying without the field keeps them usable.
+        if (code == 400 && responseBody.contains("temperature", ignoreCase = true)) {
+            DiagnosticLog.record(TAG, "Model rejects temperature, retrying without it")
+            val retry = postOpenAI(prefs, body(withTemperature = false))
+            code = retry.first
+            responseBody = retry.second
+        }
+        if (code !in 200..299) throw ApiException(code, responseBody)
+
+        return PostProcessingResponseParser.openAiText(responseBody)
+    }
+
+    private suspend fun postOpenAI(prefs: PostProcessingPreferences, body: JSONObject): Pair<Int, String> {
         val request = Request.Builder()
             .url(prefs.resolvedEndpoint())
             .addHeader("Authorization", "Bearer ${prefs.apiKey}")
             .addHeader("Content-Type", "application/json")
             .post(body.toString().toRequestBody("application/json".toMediaType()))
             .build()
-
-        val responseBody = httpClient.newCall(request).execute().use { response ->
+        return httpClient.newCall(request).awaitResponse { response ->
             val text = response.body?.string() ?: throw Exception("Empty response")
-            if (!response.isSuccessful) {
-                throw ApiException(response.code, text)
-            }
-            text
+            response.code to text
         }
-
-        return PostProcessingResponseParser.openAiText(responseBody)
     }
 
-    private fun callClaude(
+    private suspend fun callClaude(
         systemInstruction: String?,
         userText: String,
         prefs: PostProcessingPreferences,
         model: String = prefs.resolvedModel(),
         maxTokens: Int
     ): String {
-        val body = JSONObject().apply {
+        fun body(withTemperature: Boolean) = JSONObject().apply {
             put("model", model)
             put("max_tokens", maxTokens)
+            // Anthropic accepts 0..1; the settings field allows up to 2 for OpenAI-style APIs.
+            if (withTemperature) put("temperature", prefs.resolvedTemperature().toDouble().coerceIn(0.0, 1.0))
             if (systemInstruction != null) {
                 put("system", systemInstruction)
             }
@@ -163,6 +184,21 @@ class PostProcessingClient(private val httpClient: OkHttpClient) {
             })
         }
 
+        var (code, responseBody) = postClaude(prefs, body(withTemperature = true))
+        // Newer Claude models reject sampling parameters with a 400; without this retry
+        // post-processing would quietly fall back to the raw transcript on them.
+        if (code == 400 && responseBody.contains("temperature", ignoreCase = true)) {
+            DiagnosticLog.record(TAG, "Model rejects temperature, retrying without it")
+            val retry = postClaude(prefs, body(withTemperature = false))
+            code = retry.first
+            responseBody = retry.second
+        }
+        if (code !in 200..299) throw ApiException(code, responseBody)
+
+        return PostProcessingResponseParser.claudeText(responseBody)
+    }
+
+    private suspend fun postClaude(prefs: PostProcessingPreferences, body: JSONObject): Pair<Int, String> {
         val request = Request.Builder()
             .url(prefs.resolvedEndpoint())
             .addHeader("x-api-key", prefs.apiKey)
@@ -170,15 +206,9 @@ class PostProcessingClient(private val httpClient: OkHttpClient) {
             .addHeader("Content-Type", "application/json")
             .post(body.toString().toRequestBody("application/json".toMediaType()))
             .build()
-
-        val responseBody = httpClient.newCall(request).execute().use { response ->
+        return httpClient.newCall(request).awaitResponse { response ->
             val text = response.body?.string() ?: throw Exception("Empty response")
-            if (!response.isSuccessful) {
-                throw ApiException(response.code, text)
-            }
-            text
+            response.code to text
         }
-
-        return PostProcessingResponseParser.claudeText(responseBody)
     }
 }

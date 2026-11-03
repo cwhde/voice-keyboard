@@ -1,15 +1,13 @@
 # Voice Keyboard
 
-[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/badges/get-on-obtainium.svg)](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/cwhde/voice-keyboard)
-
-Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible Whisper endpoint of your choice — by default Groq (free tier available), can be pointed at OpenAI, Mistral, or any other compatible provider. Optional LLM post-processing.
+Android keyboard (IME) for speech-to-text. Sends audio to OpenAI-compatible transcription endpoints or chat endpoints accepting `input_audio` — by default Groq (free tier available), with optional LLM post-processing.
 
 <p align="center">
-  <img src="docs/screenshots/keyboard.png" alt="Voice Keyboard with mic button" width="260">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Voice Keyboard in a messaging app, with the post-processing toggles and the dictation-language key" width="260">
   &nbsp;
-  <img src="docs/screenshots/setup.png" alt="Setup screen" width="260">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Setup screen" width="260">
   &nbsp;
-  <img src="docs/screenshots/postprocessing.png" alt="Post-processing settings" width="260">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Post-processing settings" width="260">
 </p>
 
 ## Features
@@ -17,12 +15,18 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 ### Voice Input
 - Real-time voice recording with amplitude visualization
 - **Processing queue** — start a new recording immediately, previous ones transcribe in the background
-- **Offline-proof recovery** — recordings that can't be transcribed are saved on the device and resent automatically as soon as a validated internet connection returns; they survive closing the keyboard, app rebuilds, and reboots, and are kept until successfully sent (a "resend" button is also available to force a retry)
-- Works with any OpenAI-compatible Whisper API; ships with Groq as the default endpoint (whisper-large-v3-turbo). Free keys are available from both Groq and Mistral
+- **Cancel the latest dictation** — the × button stays available during recognition and post-processing. It cancels only the newest unfinished recording, including one waiting to be resent; earlier recordings continue.
+- **Offline-proof recovery** — recordings that can't be transcribed are saved on the device and resent automatically as soon as the configured provider is reachable; they survive closing the keyboard, app rebuilds, and reboots, and are kept until successfully sent (a "resend" button is also available to force a retry)
+- **Saved texts** — if you leave the original text field or switch keyboards before recognition finishes, the result stays in the app instead of replacing your clipboard. A button with a count appears on the keyboard: open it to insert, copy or delete individual results. Saved texts survive app restarts; copying happens only when you choose it.
+- Works with OpenAI-compatible `/audio/transcriptions` and `/chat/completions` audio APIs; ships with Groq as the default (whisper-large-v3-turbo). Free keys are available from both Groq and Mistral
+- **Your own server** — a speech server on your home network works too, over plain `http://` if need be; the settings warn that such an address is not encrypted
 - Configurable API endpoint, model, and language
 - **Multiple dictation languages** — list several language codes in settings and a language key appears on the keyboard: tap to cycle, long-press to pick one. The formatting prompt follows the language you switch to
-- Auto-start recording when keyboard opens
-- **Custom vocabulary** — add names and technical terms to bias recognition; helps with contacts and rare words
+- **Auto-start recording** (off by default) — start the microphone when Voice Keyboard opens. This is separate from automatic stopping. Keyboard switches save immediately; the speech-provider form uses **Save and check key**.
+- **Auto-stop on silence** (off by default) — the timer below Backspace turns automatic stopping on or off, including during a recording. Set the pause in Settings → Keyboard and appearance: 0.3–3 seconds in 0.1-second steps, initially 1.2 seconds. Speech detection runs on your device to distinguish pauses from background noise. Other voices, singing or difficult noise can still affect stopping; this does not identify individual speakers. Manual stop remains available.
+- **Voice input for your other keyboard** — a keyboard with a mic key, such as HeliBoard, can open Voice Keyboard for dictation; with *Return to previous keyboard after dictation* on, your keyboard comes back as soon as the text is typed
+- **Voice input for other apps** (off by default) — apps using Android speech recognition can use your configured speech provider directly, through the system recognition service or a standard dictation window. Enable it in Advanced settings, then select Voice Keyboard in Android voice input settings. Returns text without post-processing or recent context; requires a connection to your speech provider. Apps using a fixed or private speech engine are unaffected.
+- **Custom vocabulary** — recognition hints, a separate post-processing word list, and local word/phrase replacements share one settings screen
 - **Drop period for single-word output** — handy for voice search where a trailing period gets in the way
 
 ### Post-Processing
@@ -30,50 +34,115 @@ Android keyboard (IME) for speech-to-text. Sends audio to any OpenAI-compatible 
 - **Shorten** — makes text concise while keeping key points
 - **Emoji** — adds relevant emoji to your messages
 - **Rhyme** — rewrites dictated text as poetry
-- **Translate** — translates to any of the supported languages
-- Modes are switched with toggle buttons right on the keyboard, per recording
+- **Translate** — translates into any of the supported languages; the toggle shows the target, e.g. →EN
+- Modes are switched with toggle buttons right on the keyboard, per recording; on Android 8 and newer, long-press a button to see what it does
 - Works with OpenAI, Claude, or any OpenAI-compatible provider (OpenRouter, Groq, …)
 - Customizable prompts and temperature for each mode
+- Reasoning models work too: their `<think>` blocks are stripped before the text is inserted, and models that reject a custom temperature are retried without it
+- Provider presets (OpenAI, Claude, OpenRouter, Groq, Mistral, DeepSeek) fill in the endpoint and a model that exists there
+- **Recent dictation context** (off by default) — optionally send up to 5 of your own recent dictations to the post-processing provider to help correct names and terms misheard by speech recognition. Kept only in memory and cleared when you change apps or turn it off. It does not read your chats; context is shared between chats within the same app.
 
 ### Keyboard
+- **Quick corrections · Beta** (off by default) — enable the optional letter layout in Advanced settings → Experimental features. Its keyboard icon opens 14 basic layouts: English, French (AZERTY), German (QWERTZ), Spanish, Italian, Portuguese, Polish, Finnish, Turkish, Greek, Belarusian, Russian, Hindi and Arabic. Includes a permanent number row, Shift, accents/additional characters and symbols; the selected layout is independent of the interface and dictation languages. No predictions, swipe typing or Chinese/Japanese/Korean input conversion.
+- **Selected-text actions · Beta** (off by default) — select text in another app, then open Text actions to proofread, translate or enter a one-time instruction. Uses your existing post-processing provider; the selected passage, editing instruction and reference vocabulary are sent after you choose an action. Review a preview before applying it. Apply and Undo check that the original editor, selection and surrounding text still match. Closing an unapplied preview keeps it in Saved texts. Custom instructions use local correction keys or explicit paste, without switching Android keyboards.
+- **Back to your keyboard** — the key in the top corner takes you straight back to the keyboard you came from (Gboard, HeliBoard, …). If Android has no usable keyboard history, it offers the keyboard picker; to just hide the panel, use the system back gesture or button
 - **Send button** (paper plane) — sends Ctrl+Enter for quick message sending in messengers
+- **Enter follows the field** — in a search box, address bar or form it runs Search, Go, Send, Next or Done and shows that icon; in chat boxes it still starts a new line, and where a chat box sends on Enter, long-press it for a new line
+- **No voice in password fields** — the microphone is off there and auto-record doesn't start
 - **Accelerating backspace** — hold to delete slowly at first, then faster
-- **Punctuation keys** — `.`, `?` and `!` next to the space bar for when dictation gets the punctuation wrong
+- **Punctuation keys** — `.`, `?` and `!` next to the space bar for when dictation gets the punctuation wrong; they swallow the space left by dictation, so "hello " + `.` reads "hello."
+- **Smart spacing** — dictated text gets a space in front when the cursor sits after a word, and never a doubled one before an existing space or full stop
 - **Clipboard bar** stays visible after paste for repeated pasting
-- **Graceful shutdown** — if keyboard hides during recording, audio is finalized and transcribed to clipboard
+- **Compact terminal panel** (off by default) — enable it in Advanced settings to use a smaller panel while Terminal mode is active. Keeps microphone, cancel, backspace, Enter and keyboard switching accessible; expand it during recording without interrupting the dictation. Narrow windows keep the full panel.
+- **Graceful shutdown** — if the keyboard hides during recording, audio is finalized; results that cannot be inserted into the original editor are kept in Saved texts
 
 ### General
-- 17 interface and transcription languages
+- 17 interface languages; dictation-language support depends on the selected speech provider and model
+- Main settings keep provider, API key and dictation languages visible; connection details, keyboard preferences, diagnostics and updates expand when needed. Changing the interface language preserves dictation languages and custom prompts.
 - Light, Dark, and Auto themes
 - Long-press spacebar to switch keyboard
 - Built-in test recording in settings
-- App logs and crash reports
-- Auto-update from GitHub Releases
+- App logs and crash reports, saved to a file or shared straight from settings
+- Optional update check from GitHub Releases (off by default; the app asks once and the switch is in settings)
+- Recordings that failed permanently can be resent or deleted from the keyboard (hold the resend key twice)
 
 ## Setup
 
-1. Install the APK from [Releases](https://github.com/cwhde/voice-keyboard/releases)
-2. Go to Settings → System → Languages & input → On-screen keyboard
-3. Enable "Voice Keyboard"
-4. Open the app and enter a speech-to-text API key. Any OpenAI-compatible Whisper endpoint works:
+1. Install Voice Keyboard from [F-Droid](https://f-droid.org/en/packages/com.tyraen.voicekeyboard/) or [GitHub Releases](https://github.com/rustemar/voice-keyboard/releases). For automatic updates from GitHub, see [Installation and updates](#installation-and-updates).
+2. Open the app and tap **Enable keyboard** (or go to Settings → System → Languages & input → On-screen keyboard)
+3. Enable "Voice Keyboard"; the app shows whether it is enabled and which keyboard is active
+4. Enter a speech-to-text API key. Supported endpoints:
    - **Groq** (default, free) — get a key at [console.groq.com/keys](https://console.groq.com/keys); nothing else to change.
-   - **Mistral** (free) — get a key at [console.mistral.ai](https://console.mistral.ai/api-keys), then set the endpoint to `https://api.mistral.ai/v1/audio/transcriptions` and the model to `voxtral-mini-latest`.
-   - **OpenAI** or any other compatible provider — set the endpoint and model in the same screen.
+   - **Mistral** (free) — get a key at [console.mistral.ai](https://console.mistral.ai/api-keys), then pick *Mistral* in the provider preset list (or set the endpoint to `https://api.mistral.ai/v1/audio/transcriptions` and the model to `voxtral-mini-latest`).
+   - **OpenRouter** — pick *OpenRouter* and enter your [OpenRouter API key](https://openrouter.ai/settings/keys). The preset uses `openai/whisper-large-v3-turbo`; **Choose model** offers Whisper and Mistral alternatives. **Other model** opens the editable model field: copy a full ID, including its provider prefix, from the [speech-to-text catalog](https://openrouter.ai/collections/speech-to-text-models). OpenRouter ignores the formatting hint and custom vocabulary on this transcription endpoint. **Apply** checks a silent WAV; use **Test Recording** to check your device’s OGG/Opus or M4A/AAC recording with the selected model.
+   - **OpenAI** or any other compatible provider — pick the preset, or set the endpoint and model in the same screen.
+   - **Your own server** — anything with an OpenAI-compatible `/v1/audio/transcriptions` endpoint, such as Speaches, LocalAI or whisper.cpp's server (started with `--inference-path /v1/audio/transcriptions`). Set the endpoint to its address, e.g. `http://192.168.1.50:8000/v1`, and the model to one the server has; if it needs no key, type anything in the key field. Keyboard dictation can attempt loopback without a network, and private LAN/VPN addresses over an available link, even when Android reports no validated internet connection. Hostnames must resolve to a local address; the phone still needs a working route to the server. Public endpoints still require Android-validated internet before queued keyboard dictation is attempted. Plain `http://` is not encrypted, and the settings show a warning.
+   - **Chat Completions audio** — for servers accepting OpenAI-style `input_audio`, enter the **full** `/v1/chat/completions` URL and the model. No separate mode setting is needed. A base URL ending in `/v1` still uses `/audio/transcriptions` by default. Chat uploads the device's recorded OGG/Opus (Android 10+) or MP4/AAC (older Android), so the server must accept that audio format. **Apply** only checks a silent WAV; use **Test Recording** to confirm that the provider supports the device's recorded format.
 5. (Optional) Configure post-processing with an OpenAI or Claude API key, or any OpenAI-compatible provider:
+   - Choosing a provider preset also resets the separate translation/rhyme model to its default. The field's hint shows the effective default for the current endpoint and main model.
    - **OpenRouter** — provider "OpenAI-compatible", endpoint `https://openrouter.ai/api/v1` (the rest of the path is added automatically), model with the vendor prefix, e.g. `openai/gpt-4o-mini`. The translation model can stay empty; it reuses the model you set.
    - Once post-processing is enabled, a row of toggle buttons (fix, shorten, emoji, rhyme, translate) appears on the keyboard above the space bar.
 
-### Installing via Obtainium (recommended)
+### Personal dictionary
 
-[Obtainium](https://github.com/ImranR98/Obtainium) is a third-party Android app that auto-updates apps directly from GitHub Releases. Recommended over the in-app updater if you want to avoid the system "install unknown apps" prompt and Play Protect warnings on each manual install.
+Open **Custom vocabulary** in settings and choose a section:
 
-1. Install Obtainium from its [releases page](https://github.com/ImranR98/Obtainium/releases) or via [F-Droid](https://apt.izzysoft.de/fdroid/index/apk/dev.imranr.obtainium.fdroid).
-2. In Obtainium, tap **Add App** and paste `https://github.com/cwhde/voice-keyboard`.
+- **Recognition hints**: a short list of names and terms sent with keyboard audio, up to 600 characters. Provider/model prompt limits still apply; OpenRouter's transcription endpoint ignores these hints. This list also supplies spelling references to post-processing.
+- **Post-processing vocabulary**: a separate list of names and terms, up to 20,000 characters, sent only to your text provider when you use a supported processing mode or selected-text action. It does not consume the speech prompt budget. Larger lists increase request size and must fit your text model's context. References guide spelling; they are not instructions to insert those terms. Terminal mode omits spelling references.
+- **Local replacements**: enter the recognized wording and the desired replacement separately. Up to 5,000 rules / 100,000 characters are supported. Rules match complete words or phrases without case sensitivity and preserve the replacement's spelling. They run once on keyboard recognition before optional post-processing, including when post-processing is off. Replacements do not cascade into each other or run again on translated text or generated commands. This is literal matching, not fuzzy recognition or language-specific word segmentation; for Chinese/Japanese, use complete phrases with clear boundaries. Selected-text actions and Android's separate speech-recognition service do not apply these rules.
+
+The rule list stays on your device. Your resulting corrected transcript is sent to the text provider when you use a post-processing mode; replacement terms actually used in that transcript also serve as spelling references, except in Terminal mode. Failed keyboard recordings retain a private snapshot of their dictionary settings, so retries use the original rules. Recordings queued before these dictionary features were added keep their original recognition hints and do not acquire the new vocabulary or replacement rules on retry.
+
+### Using it with another keyboard
+
+The default voice panel has no letter keys. For full typing features, keep your usual keyboard and let its mic key open Voice Keyboard. An optional basic correction layout is available separately as a beta:
+
+1. Enable Voice Keyboard in the system keyboard list (step 3 above); you don't have to switch to it.
+2. In your keyboard, turn on the voice input key (in HeliBoard it sits in the toolbar).
+3. In Voice Keyboard settings, turn on **Return to previous keyboard after dictation** if your keyboard should come back by itself, and **Auto-start recording** if the mic key should start recording right away.
+
+The mic key now opens Voice Keyboard, and the key in the top corner of the panel takes you back. With the setting on, your keyboard also comes back by itself once your text is typed; Voice Keyboard stays open while there is still something to see: a recording being transcribed, an error, or a recording waiting to be resent. If the mic key opens Google voice typing instead, switch Google voice typing off in the system keyboard list. Gboard and Samsung Keyboard use their own voice input: switch to Voice Keyboard with the system keyboard switcher (in Gboard, long-press the space bar; elsewhere, use the keyboard button in the navigation bar), and tap the key in the top corner to go back.
+
+### Voice input for other apps
+
+This optional integration supports two standard Android interfaces:
+
+1. Save your speech provider, model and API key in the main settings.
+2. Open **Advanced settings** and enable **Voice input for other apps**. Allow microphone access if requested.
+3. For apps using the default speech-recognition service, tap **Android voice input settings**, open **Voice input** under **Speech**, and select **Voice Keyboard**. The exact screen depends on your Android version and device; some manufacturers hide this selector.
+4. For apps that open a dictation window, choose **Voice Keyboard** in Android’s app chooser. This route works without changing the default recognition service or enabling the keyboard itself.
+
+On some older Android versions, the **Voice input** selector appears only after choosing **None** as the default digital assistant. This changes your assistant choice; Voice Keyboard never changes it automatically. You can use the dictation-window route without making that change.
+
+Voice Keyboard declares Android’s `QUERY_ALL_PACKAGES` permission so the system speech service can verify microphone grants for any requesting app. Without this package visibility, Android can reject a caller even when it has microphone permission. Voice Keyboard does not enumerate, store or transmit your installed-app list. The integration remains off until you enable it, and microphone permission checks still apply.
+
+The service uses the language requested by the calling app and returns the transcript directly. It does not apply keyboard post-processing, vocabulary prompts, recent context, clipboard delivery or delayed retries. A pause ends recording automatically; you can also stop or cancel from the calling app. Sessions are limited to 45 seconds of recording and 45 seconds for the provider request. A network connection to your configured provider is required; on-device recognition, partial results, segmented sessions and supplied-audio input are not provided.
+
+Apps choosing a fixed component or using their own speech/pronunciation engine may ignore Android’s default service. AnkiDroid-style service calls and Tasks-style dictation windows are useful examples of the two interfaces; compatibility with a particular app/version still depends on that app. Duolingo has not yet been verified.
+
+### Installation and updates
+
+**F-Droid:** install [Voice Keyboard](https://f-droid.org/en/packages/com.tyraen.voicekeyboard/) through your F-Droid client to manage updates. New releases may appear there later than on GitHub.
+
+**Obtainium:** use [Obtainium](https://github.com/ImranR98/Obtainium) to install and track Voice Keyboard releases directly from GitHub.
+
+1. Install **Obtainium itself** from its [releases page](https://github.com/ImranR98/Obtainium/releases).
+2. In Obtainium, tap **Add App** and paste `https://github.com/rustemar/voice-keyboard`.
 3. Obtainium will install Voice Keyboard and notify you when new releases are published.
+
+## Troubleshooting
+
+- **Termius says voice input is off in password fields** — update Voice Keyboard to 1.9.10 or newer. Earlier versions also work with Termius Settings → Terminal → Experimental Keyboard Support enabled.
+- **The keyboard is not in the list** — tap *Enable keyboard* in the app; it opens the system screen where "Voice Keyboard" has to be switched on.
+- **I can't type my API key** — while Voice Keyboard is the active keyboard its panel has no letter keys. The settings screen says so and offers *Switch keyboard*; long-pressing the space bar on the keyboard does the same. To type by hand and still dictate, see *Using it with another keyboard*.
+- **"Microphone permission required"** — tap the mic again and the system prompt appears. After "Don't ask again" the app opens its settings page instead; allow the microphone there.
+- **Apply says "Not found"** — the provider's own message in brackets tells whether the address or the model name is wrong. A retired model looks the same as a wrong URL without it.
+- **A red counter under backspace** — recordings that could not be transcribed yet. Ones waiting for internet resend themselves; tap to resend after fixing a key; hold twice to delete all of them.
+- **Text arrives without a space, or with a stray one** — spacing follows the character next to the cursor; a field that hides its text from keyboards falls back to the configured trailing space.
 
 ## Privacy
 
-No analytics, no telemetry, no advertising. Audio is sent only to the transcription provider you configure, using your own API key. See [PRIVACY.md](PRIVACY.md) for the full policy.
+No analytics, no telemetry, no advertising. Audio is sent only to the transcription provider you configure, using your own API key. Optional post-processing sends text to your chosen provider, including recent dictations if you enable context. See [PRIVACY.md](PRIVACY.md) for the full policy.
 
 Before first use of the microphone, the app shows a one-time disclosure explaining what is recorded, where it is sent, and what is **not** collected:
 
@@ -84,10 +153,14 @@ Before first use of the microphone, the app shows a one-time disclosure explaini
 ## Building from source
 
 ```bash
-git clone https://github.com/cwhde/voice-keyboard.git
+git clone https://github.com/rustemar/voice-keyboard.git
 cd voice-keyboard
 ./gradlew assembleDebug
 ```
+
+## Third-party components
+
+Keyboard pause detection uses [Silero VAD](https://github.com/snakers4/silero-vad) by the Silero Team and [ONNX Runtime](https://github.com/microsoft/onnxruntime) by its contributors, both under the MIT license. The model runs locally and is included in the app; it does not introduce another audio recipient. The source revision, original and bundled model checksums, and license texts are included in `app/src/main/assets/third_party/`. Release builds use the compact runtime built from pinned sources; see [the build recipe](tools/onnxruntime/README.md). Speech-to-text still uses your configured provider.
 
 ## License
 

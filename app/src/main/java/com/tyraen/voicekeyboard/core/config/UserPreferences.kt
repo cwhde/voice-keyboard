@@ -13,7 +13,15 @@ data class UserPreferences(
     val autoRecord: Boolean,
     val addTrailingSpace: Boolean,
     val prompt: String,
-    val singleWordStripPunctuation: Boolean = false
+    val singleWordStripPunctuation: Boolean = false,
+    /**
+     * Hand back to the keyboard that opened this one by itself once a dictation has been typed.
+     * The key in the panel's top corner goes back whether or not this is on.
+     */
+    val returnToPreviousKeyboard: Boolean = false,
+    /** Optional keyboard-only endpointing; manual dictation remains the default. */
+    val silenceAutoStopEnabled: Boolean = false,
+    val silenceAutoStopPauseMs: Int = SilenceAutoStopSettings.DEFAULT_PAUSE_MS
 ) {
     val languageCodes: List<String> get() = TranscriptionLocale.parseCodes(languages)
 

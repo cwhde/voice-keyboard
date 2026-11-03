@@ -8,6 +8,9 @@
     <color name="text_primary">#FF1B1B1F</color>
     <color name="divider">#FFD1D5DB</color>
     <color name="test_result_bg">#FFE5E7EB</color>
+    <color name="warning_text">#FFB45309</color>
+    <color name="control_key_stroke">#FFD9D9E3</color>
+    <color name="control_key_ripple">#337C4DFF</color>
 
     <!-- Accent colors (same in both themes) -->
     <color name="mic_idle">#FF7C4DFF</color>
@@ -18,4 +21,7 @@
     <!-- Fixed colors -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
+    <!-- Below API 27 the navigation bar can't have dark buttons, so it stays black there;
+         values-v27 matches it to the background. -->
+    <color name="system_nav_bar">#FF000000</color>
 </resources>

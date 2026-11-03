@@ -12,8 +12,9 @@ import java.io.File
  * Secrets are deliberately NOT stored here: the Whisper and post-processing API keys are re-read
  * from [com.tyraen.voicekeyboard.core.config.PreferenceStore] at retry time via [toQueueItem].
  * This keeps a single source of truth for keys (rotation works on retry) and avoids duplicating
- * them into a second on-disk file. Everything else is a faithful snapshot of the toggle/config
- * state at record time, so a delayed retry produces the same output the immediate run would have.
+ * them into a second on-disk file. Durable fields preserve the toggle/config state at record time.
+ * Recent dictation context is deliberately excluded: neither its text, capture generation nor
+ * opt-in is serialized, so a delayed retry cannot reuse an unrelated session's history.
  */
 data class ParkedRecording(
     val id: String,
@@ -29,15 +30,24 @@ data class ParkedRecording(
     val prompt: String,
     val recordingDurationMs: Long,
     val pp: Pp?,
-    val flags: Flags
+    val flags: Flags,
+    /** Stable capture identity/order; retrying is not a new dictation. */
+    val workId: String = id,
+    val createdAt: Long = legacyCreatedAt(id),
+    val postProcessingVocabulary: String = "",
+    val replacementRules: String = ""
 ) {
     enum class State {
         /** Transient failure — keep auto-retrying whenever the network is available. */
         WAITING_NETWORK,
 
-        /** Permanent failure (bad/missing API key, 4xx). Stop auto-retrying; wait for the user to
-         *  fix settings and tap resend, which promotes it back to [WAITING_NETWORK]. */
-        NEEDS_ATTENTION
+        /** Permanent failure (bad/missing API key, 4xx other than 408 and a rate-limit 429). Stop
+         *  auto-retrying; wait for the user to fix settings and tap resend, which promotes it back
+         *  to [WAITING_NETWORK]. */
+        NEEDS_ATTENTION,
+
+        /** Durable cancellation marker: never retry, even if deletion is interrupted. */
+        CANCELLED
     }
 
     /** Non-secret post-processing config snapshot. */
@@ -70,9 +80,13 @@ data class ParkedRecording(
         o.put("audioPath", audioPath)
         o.put("state", state.name)
         o.put("attemptCount", attemptCount)
+        o.put("workId", workId)
+        o.put("createdAt", createdAt)
         o.put("addTrailingSpace", addTrailingSpace)
         o.put("singleWordStripPunctuation", singleWordStripPunctuation)
         o.put("vocabulary", vocabulary)
+        o.put("postProcessingVocabulary", postProcessingVocabulary)
+        o.put("replacementRules", replacementRules)
         o.put("endpoint", endpoint)
         o.put("model", model)
         o.put("language", language)
@@ -145,11 +159,18 @@ data class ParkedRecording(
             ppRhyme = flags.rhyme,
             ppTranslate = flags.translate,
             ppTerminal = flags.terminal,
-            parkedId = id
+            parkedId = id,
+            workId = workId,
+            createdAt = createdAt,
+            postProcessingVocabulary = postProcessingVocabulary,
+            replacementRules = replacementRules
         )
     }
 
     companion object {
+        private fun legacyCreatedAt(id: String): Long =
+            id.removePrefix("parked_").substringBefore('_').toLongOrNull() ?: 0L
+
         fun fromJson(text: String): ParkedRecording? = try {
             val o = JSONObject(text)
             val ppObj = o.optJSONObject("pp")
@@ -174,9 +195,13 @@ data class ParkedRecording(
                 audioPath = o.getString("audioPath"),
                 state = runCatching { State.valueOf(o.optString("state")) }.getOrDefault(State.WAITING_NETWORK),
                 attemptCount = o.optInt("attemptCount", 0),
+                workId = o.optString("workId", o.getString("id")),
+                createdAt = o.optLong("createdAt", legacyCreatedAt(o.getString("id"))),
                 addTrailingSpace = o.optBoolean("addTrailingSpace", true),
                 singleWordStripPunctuation = o.optBoolean("singleWordStripPunctuation", false),
                 vocabulary = o.optString("vocabulary"),
+                postProcessingVocabulary = o.optString("postProcessingVocabulary"),
+                replacementRules = o.optString("replacementRules"),
                 endpoint = o.optString("endpoint"),
                 model = o.optString("model"),
                 language = o.optString("language"),
@@ -225,9 +250,13 @@ data class ParkedRecording(
                 audioPath = audioPath,
                 state = state,
                 attemptCount = attemptCount,
+                workId = item.workId,
+                createdAt = item.createdAt,
                 addTrailingSpace = item.addTrailingSpace,
                 singleWordStripPunctuation = item.singleWordStripPunctuation,
                 vocabulary = item.vocabulary,
+                postProcessingVocabulary = item.postProcessingVocabulary,
+                replacementRules = item.replacementRules,
                 endpoint = c.endpoint,
                 model = c.model,
                 language = c.language,

@@ -1,0 +1,56 @@
+package com.tyraen.voicekeyboard.core.config
+
+import com.tyraen.voicekeyboard.core.network.ApiEndpoint
+
+/**
+ * A short list of providers the settings screens can fill in with one tap. Each preset only
+ * prefills the editable address and model fields; base-URL completion and the dialect switch
+ * keep working for anything not listed. Kept deliberately short: a long host table rots.
+ */
+object ProviderPresets {
+
+    data class Preset(
+        val name: String,
+        val endpoint: String,
+        /** Blank means "leave the field empty", i.e. the provider's built-in default model. */
+        val model: String,
+        /** Post-processing dialect; null for speech-to-text presets. */
+        val provider: String? = null
+    )
+
+    data class ModelSuggestion(val name: String, val id: String)
+
+    /** A few transcription models to get started; the model field remains freely editable. */
+    val openRouterSpeechModels: List<ModelSuggestion> = listOf(
+        ModelSuggestion("Whisper Large V3 Turbo", "openai/whisper-large-v3-turbo"),
+        ModelSuggestion("Whisper Large V3", "openai/whisper-large-v3"),
+        ModelSuggestion("Mistral Voxtral Mini Transcribe", "mistralai/voxtral-mini-transcribe"),
+    )
+
+    val speechToText: List<Preset> = listOf(
+        Preset("Groq", "https://api.groq.com/openai/v1/audio/transcriptions", "whisper-large-v3-turbo"),
+        Preset("OpenAI", "https://api.openai.com/v1/audio/transcriptions", "whisper-1"),
+        Preset("Mistral", "https://api.mistral.ai/v1/audio/transcriptions", "voxtral-mini-latest"),
+        Preset("OpenRouter", "https://openrouter.ai/api/v1/audio/transcriptions", openRouterSpeechModels.first().id),
+    )
+
+    val postProcessing: List<Preset> = listOf(
+        Preset("Anthropic (Claude)", PostProcessingPreferences.DEFAULT_CLAUDE_ENDPOINT, "", PostProcessingPreferences.PROVIDER_CLAUDE),
+        Preset("OpenAI", PostProcessingPreferences.DEFAULT_OPENAI_ENDPOINT, "", PostProcessingPreferences.PROVIDER_OPENAI),
+        Preset("OpenRouter", "https://openrouter.ai/api/v1/chat/completions", "openai/gpt-4o-mini", PostProcessingPreferences.PROVIDER_OPENAI),
+        Preset("Groq", "https://api.groq.com/openai/v1/chat/completions", "openai/gpt-oss-120b", PostProcessingPreferences.PROVIDER_OPENAI),
+        Preset("Mistral", "https://api.mistral.ai/v1/chat/completions", "mistral-small-latest", PostProcessingPreferences.PROVIDER_OPENAI),
+        Preset("DeepSeek", "https://api.deepseek.com/v1/chat/completions", "deepseek-flash", PostProcessingPreferences.PROVIDER_OPENAI),
+    )
+
+    /** The post-processing form shows its built-in service when an override is empty. */
+    fun postProcessingIndexOf(endpoint: String, provider: String): Int =
+        indexOf(postProcessing, endpoint.ifBlank { PostProcessingPreferences.defaultEndpoint(provider) })
+
+    /** Index of the preset served by the host of [endpoint]; -1 when the address is custom or blank. */
+    fun indexOf(presets: List<Preset>, endpoint: String): Int {
+        val host = ApiEndpoint.hostOf(ApiEndpoint.complete(endpoint, ""))
+        if (host.isEmpty()) return -1
+        return presets.indexOfFirst { ApiEndpoint.hostOf(it.endpoint) == host }
+    }
+}

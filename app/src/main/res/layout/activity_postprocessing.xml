@@ -23,7 +23,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pp_settings_description"
+            android:text="@string/pp_setup_description"
             android:textColor="@color/status_text"
             android:textSize="13sp"
             android:layout_marginBottom="24dp" />
@@ -38,6 +38,26 @@
             android:textSize="16sp"
             android:thumbTint="@color/switch_thumb_color"
             android:trackTint="@color/switch_track_color"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Use recent dictations as post-processing context -->
+        <Switch
+            android:id="@+id/switchPpContextEnabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pp_context_enable"
+            android:textColor="@color/key_text"
+            android:textSize="14sp"
+            android:thumbTint="@color/switch_thumb_color"
+            android:trackTint="@color/switch_track_color"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pp_context_hint"
+            android:textColor="@color/status_text"
+            android:textSize="11sp"
             android:layout_marginBottom="24dp" />
 
         <!-- Show terminal mode button -->
@@ -63,7 +83,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pp_provider"
+            android:text="@string/pp_api_format"
             android:textColor="@color/key_text"
             android:textSize="14sp" />
         <Spinner
@@ -71,6 +91,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/mic_idle"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pp_api_format_hint"
+            android:textColor="@color/status_text"
+            android:textSize="11sp"
+            android:layout_marginTop="-12dp"
             android:layout_marginBottom="16dp" />
 
         <!-- API Key -->
@@ -89,6 +118,20 @@
             android:backgroundTint="@color/mic_idle"
             android:layout_marginBottom="16dp" />
 
+        <!-- Provider preset: fills dialect + endpoint + model -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/preset_label"
+            android:textColor="@color/key_text"
+            android:textSize="14sp" />
+        <Spinner
+            android:id="@+id/spinnerLlmPreset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/mic_idle"
+            android:layout_marginBottom="16dp" />
+
         <!-- Endpoint -->
         <TextView
             android:layout_width="wrap_content"
@@ -99,7 +142,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pp_endpoint_hint"
+            android:text="@string/pp_endpoint_default_hint"
             android:textColor="@color/status_text"
             android:textSize="11sp"
             android:layout_marginBottom="4dp" />
@@ -111,6 +154,16 @@
             android:textColor="@color/text_primary"
             android:backgroundTint="@color/mic_idle"
             android:layout_marginBottom="16dp" />
+        <TextView
+            android:id="@+id/txtPpEndpointWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/endpoint_unencrypted_warning"
+            android:textColor="@color/warning_text"
+            android:textSize="12sp"
+            android:layout_marginTop="-12dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
 
         <!-- Model -->
         <TextView
@@ -122,7 +175,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pp_model_hint"
+            android:text="@string/pp_model_default_hint"
             android:textColor="@color/status_text"
             android:textSize="11sp"
             android:layout_marginBottom="4dp" />
@@ -130,7 +183,8 @@
             android:id="@+id/editPpModel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
+            android:inputType="text|textNoSuggestions"
+            android:importantForAutofill="no"
             android:textColor="@color/text_primary"
             android:backgroundTint="@color/mic_idle"
             android:layout_marginBottom="16dp" />
@@ -207,7 +261,8 @@
             android:id="@+id/editTranslateModel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
+            android:inputType="text|textNoSuggestions"
+            android:importantForAutofill="no"
             android:textColor="@color/text_primary"
             android:backgroundTint="@color/mic_idle"
             android:layout_marginBottom="24dp" />

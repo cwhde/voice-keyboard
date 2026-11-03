@@ -2,13 +2,18 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/keyboard_bg"
     android:paddingStart="8dp"
     android:paddingEnd="8dp"
     android:paddingTop="8dp"
-    android:paddingBottom="16dp">
+    android:paddingBottom="16dp"
+    tools:ignore="UseAppTint">
+
+    <!-- InputMethodService uses the platform inflater, so these are native widgets. They need
+         android:tint (supported since API 21); app:tint is ignored without AppCompat inflation. -->
 
     <!-- Clipboard paste bar (like Google Keyboard) -->
     <LinearLayout
@@ -24,7 +29,7 @@
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btnHideKeyboard"
+        app:layout_constraintStart_toEndOf="@id/btnPanelSize"
         app:layout_constraintEnd_toStartOf="@id/btnCutAll"
         android:layout_marginStart="6dp"
         android:layout_marginEnd="6dp">
@@ -34,7 +39,7 @@
             android:layout_height="18dp"
             android:src="@drawable/ic_paste"
             android:scaleType="centerInside"
-            app:tint="@color/key_text" />
+            android:tint="@color/key_text" />
 
         <TextView
             android:id="@+id/clipboardText"
@@ -57,27 +62,49 @@
         android:text="@string/status_idle"
         android:textColor="@color/status_text"
         android:textSize="13sp"
+        android:maxLines="2"
+        android:ellipsize="end"
         android:paddingTop="4dp"
         android:paddingBottom="8dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
         app:layout_constraintTop_toBottomOf="@id/clipboardBar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/btnPanelSize"
+        app:layout_constraintEnd_toStartOf="@id/btnCutAll" />
 
-    <!-- Hide keyboard button (top left) -->
+    <!-- Back to the previous keyboard (top corner: left, or right in RTL) -->
     <ImageButton
-        android:id="@+id/btnHideKeyboard"
+        android:backgroundTint="@null"
+        android:id="@+id/btnPreviousKeyboard"
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:background="@drawable/borderless_ripple"
-        android:src="@drawable/ic_keyboard_hide"
-        android:contentDescription="@string/cd_hide_keyboard"
+        android:src="@drawable/ic_keyboard_switch"
+        android:contentDescription="@string/cd_previous_keyboard"
         android:scaleType="centerInside"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:tint="@color/status_text" />
+        android:tint="@color/status_text" />
 
-    <!-- Settings button (below switch IME) -->
+    <!-- Optional compact/full switch, kept out of the ordinary panel -->
     <ImageButton
+        android:backgroundTint="@null"
+        android:id="@+id/btnPanelSize"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/borderless_ripple"
+        android:src="@drawable/ic_compact_panel"
+        android:contentDescription="@string/terminal_compact_show"
+        android:scaleType="centerInside"
+        android:padding="10dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnPreviousKeyboard"
+        android:tint="@color/status_text" />
+
+    <!-- Settings button (below the previous-keyboard key) -->
+    <ImageButton
+        android:backgroundTint="@null"
         android:id="@+id/btnSettings"
         android:layout_width="36dp"
         android:layout_height="36dp"
@@ -85,13 +112,62 @@
         android:src="@android:drawable/ic_menu_manage"
         android:contentDescription="@string/cd_settings"
         android:scaleType="centerInside"
-        app:layout_constraintTop_toBottomOf="@id/btnHideKeyboard"
+        app:layout_constraintTop_toBottomOf="@id/btnPreviousKeyboard"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="4dp"
-        app:tint="@color/status_text" />
+        android:tint="@color/status_text" />
+
+    <!-- Optional shortcuts form a start-side rail below settings. -->
+    <LinearLayout
+        android:id="@+id/keyboardSideRail"
+        android:layout_width="@dimen/voice_shortcut_rail_width"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:divider="@drawable/keyboard_rail_gap"
+        android:showDividers="middle"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/btnSettings"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/experimentalActionsBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="@integer/voice_shortcut_orientation"
+            android:visibility="gone"
+            android:divider="@drawable/keyboard_rail_gap"
+            android:showDividers="middle">
+
+            <ImageButton
+                android:backgroundTint="@null"
+                android:id="@+id/btnQuickCorrection"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/control_key_bg"
+                android:src="@drawable/ic_quick_correction"
+                android:contentDescription="@string/qc_open"
+                android:padding="12dp"
+                android:visibility="gone"
+                android:tint="@color/key_text" />
+
+            <ImageButton
+                android:backgroundTint="@null"
+                android:id="@+id/btnTextActions"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/control_key_bg"
+                android:src="@drawable/ic_text_actions"
+                android:contentDescription="@string/text_actions_open"
+                android:padding="12dp"
+                android:visibility="gone"
+                android:tint="@color/key_text" />
+        </LinearLayout>
+
+    </LinearLayout>
 
     <!-- Cut all text button (left of backspace) -->
     <ImageButton
+        android:backgroundTint="@null"
         android:id="@+id/btnCutAll"
         android:layout_width="42dp"
         android:layout_height="42dp"
@@ -103,10 +179,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btnBackspace"
         android:layout_marginEnd="6dp"
-        app:tint="@color/key_text" />
+        android:tint="@color/key_text" />
 
     <!-- Backspace button (top right, with long-press repeat) -->
     <ImageButton
+        android:backgroundTint="@null"
         android:id="@+id/btnBackspace"
         android:layout_width="56dp"
         android:layout_height="42dp"
@@ -117,52 +194,118 @@
         android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/key_text" />
+        android:tint="@color/key_text" />
 
-    <!-- Resend failed recordings (appears under backspace only when something failed) -->
-    <FrameLayout
-        android:id="@+id/retryFrame"
+    <!-- Auto-stop and visible recovery actions share the end-side column below backspace. -->
+    <LinearLayout
+        android:id="@+id/keyboardRecoveryRail"
         android:layout_width="56dp"
-        android:layout_height="42dp"
-        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:divider="@drawable/keyboard_rail_gap"
+        android:showDividers="middle"
+        android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@id/btnBackspace"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <ImageButton
-            android:id="@+id/btnRetryFailed"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/key_bg"
-            android:src="@drawable/ic_retry"
-            android:contentDescription="@string/cd_retry_failed"
+            android:backgroundTint="@null"
+            android:id="@+id/btnSilenceAutoStop"
+            android:layout_width="56dp"
+            android:layout_height="48dp"
+            android:background="@drawable/toggle_key_bg"
+            android:src="@drawable/ic_silence_timer"
+            android:contentDescription="@string/cd_silence_auto_stop_off"
             android:scaleType="centerInside"
-            android:padding="8dp"
-            app:tint="@color/mic_recording" />
+            android:padding="12dp"
+            android:tint="@color/key_text" />
 
-        <TextView
-            android:id="@+id/retryBadge"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_gravity="top|end"
-            android:layout_marginTop="1dp"
-            android:layout_marginEnd="1dp"
-            android:background="@drawable/retry_badge_bg"
-            android:gravity="center"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-    </FrameLayout>
+        <FrameLayout
+            android:id="@+id/retryFrame"
+            android:layout_width="56dp"
+            android:layout_height="42dp"
+            android:visibility="gone">
 
-    <!-- Mic button -->
+            <ImageButton
+                android:backgroundTint="@null"
+                android:id="@+id/btnRetryFailed"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/key_bg"
+                android:src="@drawable/ic_retry"
+                android:contentDescription="@string/cd_retry_failed"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                android:tint="@color/mic_recording" />
+
+            <TextView
+                android:id="@+id/retryBadge"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/retry_badge_bg"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/pendingTextsFrame"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:visibility="gone">
+
+            <ImageButton
+                android:backgroundTint="@null"
+                android:id="@+id/btnPendingTexts"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/borderless_ripple"
+                android:src="@drawable/ic_saved_texts"
+                android:contentDescription="@string/saved_texts_title"
+                android:scaleType="centerInside"
+                android:padding="10dp"
+                android:tint="@color/status_text" />
+
+            <TextView
+                android:id="@+id/pendingTextsBadge"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/queue_badge_bg"
+                android:gravity="center"
+                android:importantForAccessibility="no"
+                android:textColor="@color/key_text"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Keep a minimum microphone area independent of the variable-height side rail. -->
+    <View
+        android:id="@+id/micAreaFootprint"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:visibility="invisible"
+        android:importantForAccessibility="no"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/statusText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Bottom anchoring keeps the microphone steady as the side rails change. -->
     <FrameLayout
         android:id="@+id/micFrame"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        app:layout_constraintTop_toBottomOf="@id/statusText"
+        app:layout_constraintBottom_toBottomOf="@id/voiceControlsBottom"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="4dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Ripple layers for recording animation -->
         <View
@@ -186,6 +329,7 @@
             android:scaleY="1" />
 
         <ImageButton
+            android:backgroundTint="@null"
             android:id="@+id/btnMic"
             android:layout_width="80dp"
             android:layout_height="80dp"
@@ -222,6 +366,7 @@
 
     <!-- Send button (right of mic, Ctrl+Enter) -->
     <ImageButton
+        android:backgroundTint="@null"
         android:id="@+id/btnSend"
         android:layout_width="56dp"
         android:layout_height="56dp"
@@ -233,10 +378,11 @@
         app:layout_constraintTop_toTopOf="@id/micFrame"
         app:layout_constraintBottom_toBottomOf="@id/micFrame"
         app:layout_constraintStart_toEndOf="@id/micFrame"
-        app:tint="@color/key_text" />
+        android:tint="@color/key_text" />
 
     <!-- Cancel button (left of mic) -->
     <ImageButton
+        android:backgroundTint="@null"
         android:id="@+id/btnCancel"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -248,114 +394,153 @@
         app:layout_constraintTop_toTopOf="@id/micFrame"
         app:layout_constraintBottom_toBottomOf="@id/micFrame"
         app:layout_constraintEnd_toStartOf="@id/micFrame"
-        app:tint="@color/status_text" />
+        android:tint="@color/status_text" />
 
-    <!-- Post-processing toggle row (above bottom row, left-aligned) -->
-    <LinearLayout
-        android:id="@+id/ppToggleRow"
+    <!-- Rails grow only for visible controls; processing keys always stay below them. -->
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/voiceControlsBottom"
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:visibility="gone"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/micFrame"
-        app:layout_constraintStart_toStartOf="parent">
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:barrierAllowsGoneWidgets="false"
+        app:constraint_referenced_ids="micAreaFootprint,keyboardSideRail,keyboardRecoveryRail" />
 
-        <ImageButton
-            android:id="@+id/btnPpFix"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/toggle_key_bg"
-            android:src="@drawable/ic_fix_text"
-            android:contentDescription="@string/pp_fix"
-            android:scaleType="centerInside"
-            android:padding="6dp"
-            app:tint="@color/key_text" />
+    <!-- Processing modes keep their full row; narrow windows can still scroll horizontally. -->
+    <com.tyraen.voicekeyboard.feature.ime.LogicalStartHorizontalScrollView
+        android:id="@+id/keyboardControlsStrip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fillViewport="false"
+        android:scrollbars="horizontal"
+        android:scrollbarSize="2dp"
+        android:fadingEdgeLength="12dp"
+        android:requiresFadingEdge="horizontal"
+        android:layout_marginTop="6dp"
+        app:layout_constraintTop_toBottomOf="@id/voiceControlsBottom"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <View
-            android:layout_width="4dp"
-            android:layout_height="0dp" />
-
-        <ImageButton
-            android:id="@+id/btnPpShorten"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/toggle_key_bg"
-            android:src="@drawable/ic_shorten"
-            android:contentDescription="@string/pp_shorten"
-            android:scaleType="centerInside"
-            android:padding="6dp"
-            app:tint="@color/key_text" />
-
-        <View
-            android:layout_width="4dp"
-            android:layout_height="0dp" />
-
-        <ImageButton
-            android:id="@+id/btnPpEmoji"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/toggle_key_bg"
-            android:src="@drawable/ic_emoji"
-            android:contentDescription="@string/pp_emoji"
-            android:scaleType="centerInside"
-            android:padding="6dp"
-            app:tint="@color/key_text" />
-
-        <View
-            android:layout_width="4dp"
-            android:layout_height="0dp" />
-
-        <ImageButton
-            android:id="@+id/btnPpRhyme"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/toggle_key_bg"
-            android:src="@drawable/ic_rhyme"
-            android:contentDescription="@string/pp_rhyme"
-            android:scaleType="centerInside"
-            android:padding="6dp"
-            app:tint="@color/key_text" />
-
-        <View
-            android:layout_width="4dp"
-            android:layout_height="0dp" />
-
-        <ImageButton
-            android:id="@+id/btnPpTerminal"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/toggle_key_bg"
-            android:src="@drawable/ic_terminal"
-            android:contentDescription="@string/pp_terminal"
-            android:scaleType="centerInside"
-            android:padding="6dp"
-            android:visibility="gone"
-            app:tint="@color/key_text" />
-
-        <View
-            android:id="@+id/ppTerminalSpacer"
-            android:layout_width="4dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/btnPpTranslate"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:minWidth="40dp"
-            android:minHeight="0dp"
-            android:background="@drawable/toggle_key_bg"
-            android:text="en"
-            android:textColor="@color/key_text"
-            android:textSize="13sp"
-            android:textAllCaps="false"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:padding="0dp"
-            android:contentDescription="@string/pp_translate" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:id="@+id/ppToggleRow"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone"
+                android:layout_marginTop="0dp">
+
+                <ImageButton
+                    android:backgroundTint="@null"
+                    android:id="@+id/btnPpFix"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/toggle_key_bg"
+                    android:src="@drawable/ic_fix_text"
+                    android:contentDescription="@string/pp_fix"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    android:tint="@color/key_text" />
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="0dp" />
+
+                <ImageButton
+                    android:backgroundTint="@null"
+                    android:id="@+id/btnPpShorten"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/toggle_key_bg"
+                    android:src="@drawable/ic_shorten"
+                    android:contentDescription="@string/pp_shorten"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    android:tint="@color/key_text" />
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="0dp" />
+
+                <ImageButton
+                    android:backgroundTint="@null"
+                    android:id="@+id/btnPpEmoji"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/toggle_key_bg"
+                    android:src="@drawable/ic_emoji"
+                    android:contentDescription="@string/pp_emoji"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    android:tint="@color/key_text" />
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="0dp" />
+
+                <ImageButton
+                    android:backgroundTint="@null"
+                    android:id="@+id/btnPpRhyme"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/toggle_key_bg"
+                    android:src="@drawable/ic_rhyme"
+                    android:contentDescription="@string/pp_rhyme"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    android:tint="@color/key_text" />
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="0dp" />
+
+                <ImageButton
+                    android:backgroundTint="@null"
+                    android:id="@+id/btnPpTerminal"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/toggle_key_bg"
+                    android:src="@drawable/ic_terminal"
+                    android:contentDescription="@string/pp_terminal"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    android:visibility="gone"
+                    android:tint="@color/key_text" />
+
+                <View
+                    android:id="@+id/ppTerminalSpacer"
+                    android:layout_width="6dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:backgroundTint="@null"
+                    android:id="@+id/btnPpTranslate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:minWidth="48dp"
+                    android:minHeight="0dp"
+                    android:background="@drawable/toggle_key_bg"
+                    android:text="en"
+                    android:textColor="@color/key_text"
+                    android:textSize="13sp"
+                    android:textAllCaps="false"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:padding="0dp"
+                    android:drawableStart="@drawable/ic_translate_arrow"
+                    android:drawablePadding="1dp"
+                    android:drawableTint="@color/key_text"
+                    android:stateListAnimator="@null"
+                    android:contentDescription="@string/pp_translate" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.tyraen.voicekeyboard.feature.ime.LogicalStartHorizontalScrollView>
 
     <!-- Bottom row: paste, space, enter -->
     <LinearLayout
@@ -366,12 +551,13 @@
         android:gravity="center"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="4dp"
-        app:layout_constraintTop_toBottomOf="@id/ppToggleRow"
+        app:layout_constraintTop_toBottomOf="@id/keyboardControlsStrip"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button
+            android:backgroundTint="@null"
             android:id="@+id/btnLanguage"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -394,6 +580,7 @@
             android:visibility="gone" />
 
         <Button
+            android:backgroundTint="@null"
             android:id="@+id/btnSpace"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -408,6 +595,7 @@
             android:layout_height="0dp" />
 
         <Button
+            android:backgroundTint="@null"
             android:id="@+id/btnPeriod"
             android:layout_width="36dp"
             android:layout_height="match_parent"
@@ -424,6 +612,7 @@
             android:layout_height="0dp" />
 
         <Button
+            android:backgroundTint="@null"
             android:id="@+id/btnQuestion"
             android:layout_width="36dp"
             android:layout_height="match_parent"
@@ -440,6 +629,7 @@
             android:layout_height="0dp" />
 
         <Button
+            android:backgroundTint="@null"
             android:id="@+id/btnExclamation"
             android:layout_width="36dp"
             android:layout_height="match_parent"
@@ -456,6 +646,7 @@
             android:layout_height="0dp" />
 
         <ImageButton
+            android:backgroundTint="@null"
             android:id="@+id/btnEnter"
             android:layout_width="52dp"
             android:layout_height="match_parent"

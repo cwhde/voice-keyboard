@@ -116,4 +116,36 @@ class ParkedRecordingTest {
         assertNull(ParkedRecording.fromJson("not json"))
         assertNull(ParkedRecording.fromJson("{}"))
     }
+
+    @Test fun `parked recordings cannot persist or reuse the live context session`() {
+        val original = sampleItem(withPp = true).let {
+            it.copy(ppPreferences = it.ppPreferences!!.copy(contextEnabled = true), contextToken = 123L)
+        }
+        val json = ParkedRecording.fromQueueItem(
+            original, "context_case", "/files/parked/context.ogg",
+            ParkedRecording.State.WAITING_NETWORK, 0
+        ).toJson()
+        assertFalse(json.contains("contextToken"))
+        assertFalse(json.contains("contextEnabled"))
+        val restored = ParkedRecording.fromJson(json)!!.toQueueItem("STT", "PP")
+        assertNull(restored.contextToken)
+        assertFalse(restored.ppPreferences!!.contextEnabled)
+    }
+    @Test fun `capture identity and creation order survive parking and restored retries`() {
+        val item = sampleItem(withPp = false).copy(workId = "capture-original", createdAt = 123456L)
+        val rec = ParkedRecording.fromQueueItem(item, "parked_999999_0", "/files/c.ogg", ParkedRecording.State.WAITING_NETWORK, 5)
+        val restored = ParkedRecording.fromJson(rec.toJson())!!.toQueueItem("NEW", "")
+        assertEquals("capture-original", restored.workId)
+        assertEquals(123456L, restored.createdAt)
+    }
+
+    @Test fun `legacy sidecars preserve parked timestamp instead of becoming newly created work`() {
+        val rec = ParkedRecording.fromQueueItem(sampleItem(false), "parked_987654_0", "/files/c.ogg", ParkedRecording.State.WAITING_NETWORK, 0)
+        val legacy = org.json.JSONObject(rec.toJson()).apply { remove("workId"); remove("createdAt") }
+        val restored = ParkedRecording.fromJson(legacy.toString())!!
+        assertEquals("parked_987654_0", restored.workId)
+        assertEquals(987654L, restored.createdAt)
+        assertEquals(987654L, restored.toQueueItem("KEY", "").createdAt)
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.tyraen.voicekeyboard.core.network
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ApiEndpointTest {
@@ -46,11 +48,51 @@ class ApiEndpointTest {
         assertEquals("", ApiEndpoint.complete("   ", chat))
     }
 
+    @Test fun `only a plain http address counts as unencrypted`() {
+        assertTrue(ApiEndpoint.isUnencrypted("http://192.168.1.50:8000/v1/audio/transcriptions"))
+        assertTrue(ApiEndpoint.isUnencrypted("  HTTP://nas.local:11434/v1 "))
+        assertFalse(ApiEndpoint.isUnencrypted("https://api.groq.com/openai/v1/audio/transcriptions"))
+        assertFalse(ApiEndpoint.isUnencrypted(""))
+        // A scheme-less address is completed to https, so it is not flagged while being typed.
+        assertFalse(ApiEndpoint.isUnencrypted("api.mistral.ai/v1"))
+    }
+
+    @Test fun `a server on the phone itself is not flagged`() {
+        assertFalse(ApiEndpoint.isUnencrypted("http://localhost:8080/v1"))
+        assertFalse(ApiEndpoint.isUnencrypted("http://127.0.0.1:8000/v1/audio/transcriptions"))
+        assertTrue(ApiEndpoint.isUnencrypted("http://10.0.2.2:8765/v1"))
+    }
+
     @Test fun `host and path are split without port credentials or query`() {
         assertEquals("openrouter.ai", ApiEndpoint.hostOf("https://OpenRouter.ai/api/v1"))
         assertEquals("localhost", ApiEndpoint.hostOf("http://user:pw@localhost:11434/v1?x=1"))
         assertEquals("", ApiEndpoint.hostOf("no scheme here"))
         assertEquals("/api/v1", ApiEndpoint.pathOf("https://openrouter.ai/api/v1?x=1#frag"))
         assertEquals("", ApiEndpoint.pathOf("https://openrouter.ai"))
+    }
+
+    @Test fun `chat audio is selected only by a complete chat completions url`() {
+        assertTrue(ApiEndpoint.usesChatCompletions("https://example.com/v1/chat/completions"))
+        assertTrue(ApiEndpoint.usesChatCompletions("https://example.com/v1/chat/completions?api-version=1"))
+        assertFalse(ApiEndpoint.usesChatCompletions("https://example.com/v1"))
+        assertFalse(ApiEndpoint.usesChatCompletions("https://example.com/v1/audio/transcriptions"))
+    }
+
+    @Test fun `OpenRouter hosts are recognized with or without a scheme`() {
+        assertTrue(ApiEndpoint.isOpenRouter("https://openrouter.ai/api/v1/audio/transcriptions"))
+        assertTrue(ApiEndpoint.isOpenRouter("  OpenRouter.AI/api/v1/  "))
+        assertTrue(ApiEndpoint.isOpenRouter("https://eu.openrouter.ai/api/v1"))
+        assertTrue(ApiEndpoint.isOpenRouter("eu.openrouter.ai/api/v1/audio/transcriptions"))
+    }
+
+    @Test fun `OpenRouter detection checks the actual hostname rather than a matching substring`() {
+        assertFalse(ApiEndpoint.isOpenRouter("https://evil-openrouter.ai/api/v1"))
+        assertFalse(ApiEndpoint.isOpenRouter("https://openrouter.ai.example.org/api/v1"))
+        assertFalse(ApiEndpoint.isOpenRouter("https://openrouter.ai@proxy.example.org/api/v1"))
+        assertFalse(ApiEndpoint.isOpenRouter("https://proxy.example.org/openrouter.ai/api/v1"))
+        assertFalse(ApiEndpoint.isOpenRouter("https://proxy.example.org/api/v1?host=openrouter.ai"))
+        assertFalse(ApiEndpoint.isOpenRouter("https://api.groq.com/openai/v1"))
+        assertFalse(ApiEndpoint.isOpenRouter(""))
+        assertFalse(ApiEndpoint.isOpenRouter("not a url"))
     }
 }
