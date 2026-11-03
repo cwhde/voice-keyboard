@@ -82,8 +82,8 @@ jobs:
           "$APKSIGNER" verify --print-certs "$APK"
 
           APK_FP=$("$APKSIGNER" verify --print-certs "$APK" \
-            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' \
-            | tr -d ':' | tr 'A-F' 'a-f')
+            | sed -n 's/.*certificate SHA-256 digest: //p' \
+            | tr -d ':' | tr 'A-F' 'a-f' | sort -u)
           KS_FP=$(keytool -list -v -keystore "$GITHUB_WORKSPACE/release-keystore.p12" \
             -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" \
             | sed -n 's/^[[:space:]]*SHA256: //p' \
