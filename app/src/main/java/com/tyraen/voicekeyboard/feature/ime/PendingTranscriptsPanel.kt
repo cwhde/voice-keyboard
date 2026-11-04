@@ -5,10 +5,10 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.tyraen.voicekeyboard.R
 import com.tyraen.voicekeyboard.core.logging.DiagnosticLog
+import com.tyraen.voicekeyboard.core.ui.useReadableActionLabel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -31,6 +33,7 @@ import kotlinx.coroutines.withContext
 class PendingTranscriptsPanel(
     private val root: FrameLayout,
     private val store: PendingTranscriptStore,
+    private val savedActionsLeft: Flow<Boolean>,
     private val onInsert: (PendingTranscript) -> Boolean,
     private val onNotice: (String) -> Unit
 ) {
@@ -62,6 +65,7 @@ class PendingTranscriptsPanel(
     }
     private var transcripts = emptyList<PendingTranscript>()
     private var confirmingDelete: String? = null
+    private var actionsOnLeft = false
     private val accessibilityState = HashMap<View, Int>()
     private var destroyed = false
 
@@ -104,6 +108,14 @@ class PendingTranscriptsPanel(
                 transcripts = saved
                 updateBadge()
                 if (overlay.visibility == View.VISIBLE) render()
+            }
+        }
+        scope.launch {
+            savedActionsLeft.collect { left ->
+                if (actionsOnLeft != left) {
+                    actionsOnLeft = left
+                    if (overlay.visibility == View.VISIBLE) render()
+                }
             }
         }
         scope.launch {
@@ -177,7 +189,7 @@ class PendingTranscriptsPanel(
         transcripts.forEach { transcript ->
             val card = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(dp(8), dp(8), dp(8), 0)
+                setPadding(dp(8), dp(8), dp(8), dp(12))
                 setBackgroundResource(R.drawable.key_bg)
             }
             val preview = TextView(context).apply {
@@ -199,7 +211,8 @@ class PendingTranscriptsPanel(
             }
             val actions = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.END
+                gravity = if (actionsOnLeft) Gravity.LEFT else Gravity.RIGHT
+                setPadding(0, dp(8), 0, 0)
             }
             if (confirmingDelete == transcript.id) {
                 actions.addView(action(android.R.string.cancel, View.NO_ID, transcript) {
@@ -210,26 +223,48 @@ class PendingTranscriptsPanel(
                     remove(transcript)
                 }, actionParams())
             } else {
-                actions.addView(action(R.string.saved_texts_insert, R.id.btnPendingInsert, transcript) {
+                actions.addView(iconAction(R.string.saved_texts_insert, R.drawable.ic_paste, R.id.btnPendingInsert, transcript) {
                     insert(transcript)
-                }, actionParams())
-                actions.addView(action(R.string.saved_texts_copy, R.id.btnPendingCopy, transcript) {
+                }, iconActionParams())
+                actions.addView(iconAction(R.string.saved_texts_copy, R.drawable.ic_copy, R.id.btnPendingCopy, transcript) {
                     copy(transcript)
-                }, actionParams())
-                actions.addView(action(R.string.saved_texts_delete, R.id.btnPendingDelete, transcript) {
+                }, iconActionParams(gapBefore = true))
+                actions.addView(iconAction(R.string.saved_texts_delete, R.drawable.ic_delete, R.id.btnPendingDelete, transcript) {
                     confirmingDelete = transcript.id
                     render()
-                }, actionParams())
+                }, iconActionParams(gapBefore = true))
             }
             card.addView(actions, LinearLayout.LayoutParams(-1, -2))
             list.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(8) })
         }
     }
 
-    private fun actionParams() = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+    private fun actionParams() = LinearLayout.LayoutParams(0, -2, 1f).apply {
         marginStart = dp(3)
         marginEnd = dp(3)
     }
+
+    private fun iconActionParams(gapBefore: Boolean = false) =
+        LinearLayout.LayoutParams(dp(48), dp(48)).apply {
+            if (gapBefore) marginStart = dp(6)
+        }
+
+    private fun iconAction(label: Int, icon: Int, viewId: Int, transcript: PendingTranscript, click: () -> Unit) =
+        ImageButton(context).apply {
+            id = viewId
+            contentDescription = context.getString(label)
+            ViewCompat.setTooltipText(this, contentDescription)
+            setImageResource(icon)
+            imageTintList = ContextCompat.getColorStateList(context, R.color.control_key_text)
+            backgroundTintList = null
+            setBackgroundResource(R.drawable.control_key_bg)
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            minimumWidth = dp(48)
+            minimumHeight = dp(48)
+            setPadding(dp(14), dp(14), dp(14), dp(14))
+            isEnabled = transcript.id !in claimedIds.value
+            setOnClickListener { click() }
+        }
 
     private fun action(label: Int, viewId: Int, transcript: PendingTranscript, click: () -> Unit) =
         Button(context).apply {
@@ -237,6 +272,7 @@ class PendingTranscriptsPanel(
             setText(label)
             isAllCaps = false
             textSize = 14f
+            useReadableActionLabel()
             minHeight = dp(48)
             minimumHeight = dp(48)
             minWidth = 0

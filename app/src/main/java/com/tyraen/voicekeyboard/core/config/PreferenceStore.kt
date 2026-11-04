@@ -14,6 +14,7 @@ import com.tyraen.voicekeyboard.core.locale.TranscriptionLocale
 import com.tyraen.voicekeyboard.feature.vocabulary.TextDictionary
 import com.tyraen.voicekeyboard.feature.vocabulary.TextReplacementRules
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import java.util.Locale
 
 private val Context.store: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -27,12 +28,14 @@ class PreferenceStore(private val context: Context) {
         val LANGUAGE = stringPreferencesKey("language")
         val ACTIVE_LANGUAGE = stringPreferencesKey("active_language")
         val AUTO_RECORD = booleanPreferencesKey("auto_record")
+        val SAVED_ACTIONS_LEFT = booleanPreferencesKey("saved_actions_left")
         val ADD_TRAILING_SPACE = booleanPreferencesKey("add_trailing_space")
         val PROMPT = stringPreferencesKey("prompt")
         val SINGLE_WORD_STRIP_PUNCT = booleanPreferencesKey("single_word_strip_punct")
         val RETURN_TO_PREVIOUS_KEYBOARD = booleanPreferencesKey("return_to_previous_keyboard")
         val SILENCE_AUTO_STOP_ENABLED = booleanPreferencesKey("silence_auto_stop_enabled")
         val SILENCE_AUTO_STOP_PAUSE_MS = intPreferencesKey("silence_auto_stop_pause_ms")
+        val AUTO_SEND_AFTER_SILENCE_ENABLED = booleanPreferencesKey("auto_send_after_silence_enabled")
         val VOCABULARY = stringPreferencesKey("vocabulary")
         val POSTPROCESSING_VOCABULARY = stringPreferencesKey("postprocessing_vocabulary")
         val TEXT_REPLACEMENTS = stringPreferencesKey("text_replacements")
@@ -95,7 +98,8 @@ class PreferenceStore(private val context: Context) {
             silenceAutoStopEnabled = prefs[Keys.SILENCE_AUTO_STOP_ENABLED] ?: false,
             silenceAutoStopPauseMs = SilenceAutoStopSettings.normalizePauseMs(
                 prefs[Keys.SILENCE_AUTO_STOP_PAUSE_MS] ?: SilenceAutoStopSettings.DEFAULT_PAUSE_MS
-            )
+            ),
+            autoSendAfterSilenceEnabled = prefs[Keys.AUTO_SEND_AFTER_SILENCE_ENABLED] ?: false
         )
     }
 
@@ -114,6 +118,7 @@ class PreferenceStore(private val context: Context) {
             data[Keys.SILENCE_AUTO_STOP_ENABLED] = prefs.silenceAutoStopEnabled
             data[Keys.SILENCE_AUTO_STOP_PAUSE_MS] =
                 SilenceAutoStopSettings.normalizePauseMs(prefs.silenceAutoStopPauseMs)
+            data[Keys.AUTO_SEND_AFTER_SILENCE_ENABLED] = prefs.autoSendAfterSilenceEnabled
         }
     }
 
@@ -252,6 +257,13 @@ class PreferenceStore(private val context: Context) {
         }
     }
 
+    /** Physical alignment is explicit, including in right-to-left interfaces. */
+    val savedActionsLeft = context.store.data.map { it[Keys.SAVED_ACTIONS_LEFT] ?: false }
+
+    suspend fun setSavedActionsLeft(value: Boolean) {
+        context.store.edit { it[Keys.SAVED_ACTIONS_LEFT] = value }
+    }
+
     /** Keyboard switches save only their own value, without applying unfinished provider edits. */
     suspend fun setAutoRecord(value: Boolean) {
         context.store.edit { it[Keys.AUTO_RECORD] = value }
@@ -275,6 +287,11 @@ class PreferenceStore(private val context: Context) {
     /** Only the keyboard toggle changes, without overwriting settings being edited elsewhere. */
     suspend fun setSilenceAutoStopEnabled(value: Boolean) {
         context.store.edit { it[Keys.SILENCE_AUTO_STOP_ENABLED] = value }
+    }
+
+    /** Sending is opt-in and saves independently of unfinished provider edits. */
+    suspend fun setAutoSendAfterSilenceEnabled(value: Boolean) {
+        context.store.edit { it[Keys.AUTO_SEND_AFTER_SILENCE_ENABLED] = value }
     }
 
     /** Slider changes persist independently of the provider's network validation on Apply. */

@@ -62,8 +62,8 @@ android {
         applicationId = "com.tyraen.voicekeyboard"
         minSdk = 24
         targetSdk = 34
-        versionCode = 68
-        versionName = "1.14.0"
+        versionCode = 69
+        versionName = "1.15.0"
     }
 
     signingConfigs {
@@ -118,7 +118,8 @@ android {
     buildTypes.create("noiseLocal") {
         initWith(buildTypes.getByName("release"))
         applicationIdSuffix = ".noisetest"
-        versionNameSuffix = "-noise-local.2"
+        versionNameSuffix = providers.gradleProperty("localTestVersionSuffix")
+            .getOrElse("-noise-local.2")
         signingConfig = signingConfigs.getByName("debug")
         matchingFallbacks += listOf("release")
     }
